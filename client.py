@@ -12,7 +12,7 @@ def main():
 
     s.connect((endereco, porta))
 
-    msg = s.recvfrom(1024)
+    msg, _ = s.recvfrom(1024)
 
     print(f"Recebi {(msg.decode('utf-8'))}")
 
