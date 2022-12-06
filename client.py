@@ -11,10 +11,10 @@ def main():
     porta = 3000
 
     s.connect((endereco, porta))
-    
-    msg, add = s.recvfrom(1024)
 
-    print(f"Recebi {(msg.decode('utf-8'))} do {add}")
+    msg = s.recvfrom(1024)
+
+    print(f"Recebi {(msg.decode('utf-8'))}")
 
 if __name__ == '__main__':
     main()
