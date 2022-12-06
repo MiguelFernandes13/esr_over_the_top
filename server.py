@@ -8,9 +8,17 @@ from VideoStream import VideoStream
 from Database import Database
 import json
 
-def processamento(db : Database, add : tuple, s : socket.socket):
+def processamento(db : Database, add : tuple, client : socket):
     db.connectNode(add[0])
-    s.sendto(str(db.getNeighbors(add[0])).encode('utf-8'), add)
+    client.send(str(db.getNeighbors(add[0])).encode('utf-8'))
+    while True:
+        data = client.recv(2048)
+        message = data.decode('utf-8')
+        if message == 'BYE':
+            break
+        reply = f'Server: {message}'
+        client.sendall(str.encode(reply))
+    client.close()
 
 #def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
 #    cenas.remove(add)
@@ -37,9 +45,8 @@ def join_network(db : Database):
 
     while True:
         try:
-            connect, add = s.accept()
-            #mensagem, add = s.recvfrom(1024)
-            threading.Thread(target=processamento, args=(db, add, s)).start()         
+            client, add = s.accept()
+            threading.Thread(target=processamento, args=(db, add, client)).start()         
         except Exception:
             break
 
@@ -101,7 +108,7 @@ def join_network(db : Database):
 #       cenas.show() 
 
 def main():
-    signal(SIGPIPE,SIG_DFL) 
+    #signal(SIGPIPE,SIG_DFL) 
     config_file = open("configuration.json", "r")
     config_text = config_file.read()
     data = json.loads(config_text)
