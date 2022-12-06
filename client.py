@@ -15,7 +15,7 @@ def main():
 
     msg, add = s.recvfrom(1024)
 
-    print(f"Recebi {msg.decode('utf-8')} do {add}")
+    print(f"Recebi {eval(msg.decode('utf-8'))} do {add}")
 
 if __name__ == '__main__':
     main()
