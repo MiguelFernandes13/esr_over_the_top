@@ -8,7 +8,6 @@ def main():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     endereco = '10.0.0.10'
-
     porta = 3000
 
     s.connect((endereco, porta))
