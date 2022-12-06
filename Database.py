@@ -24,7 +24,7 @@ class Node:
     
 
 
-class database:
+class Database:
     lock : threading.Lock
     nodes: dict # { 'ip' : Node}
     iptobin: list # [ ('bin', 'ip') ]
@@ -33,6 +33,14 @@ class database:
 
     def __init__(self):
         self.lock = threading.Lock()
+
+    def addNode(self, ip, interfaces, neighbors):
+        try:
+            self.lock.acquire()
+            self.nodes[ip] = Node(ip, interfaces, neighbors)
+        finally:
+            self.lock.release()
+
 
     def connectNode(self, nodeIp):
         try:

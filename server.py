@@ -4,13 +4,12 @@ import struct
 import threading
 import time
 from VideoStream import VideoStream
-import Database
+from Database import Database
 import json
 
 def processamento(db : Database, add : tuple, s : socket.socket, data : str):
-    node = data["Nodes"]['Ip' == add[0]]
-    db.acrescenta(add, node['Neighbors'], s, node['Interfaces'])
-    s.sendto(node['Neighbors'].encode('utf-8'), add[0])
+    db.connectNode(add[0])
+    s.sendto(db.getNeighbors(add[0]).encode('utf-8'), add[0])
 
 #def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
 #    cenas.remove(add)
@@ -102,7 +101,10 @@ def main():
     config_text = config_file.read()
     data = json.loads(config_text)
 
-    db = Database.Database()
+    db = Database()
+
+    for i in data['Nodes']:
+        db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
 
     threading.Thread(target=join_network, args=(db, data)).start()
     #threading.Thread(target=servico2, args=(cenas,)).start()

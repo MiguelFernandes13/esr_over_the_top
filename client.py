@@ -11,11 +11,9 @@ def main():
 
     porta = 3000
 
-    mensagem = "Adoro Redes :)"
     s.connect((endereco, porta))
-    #s.sendall(mensagem.encode('utf-8'))
 
-    msg, = s.recvfrom(1024)
+    msg, add = s.recvfrom(1024)
 
     print(f"Recebi {msg.decode('utf-8')} do {add}")
 
