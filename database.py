@@ -1,28 +1,81 @@
 import threading
 import time
 
+class Node:
+    ip: str # binario
+    interfaces: list
+    neighbors: list # Node
+    isActive: bool
+    isStreaming: bool
+
+    def __init__(self, ip, interfaces, neighbors) -> None:
+        self.ip = ip
+        self.interfaces = interfaces
+        self.neighbors = neighbors
+        self.isActive = False
+        self.isStreaming = False
+    
+    def startStreaming(self): self.isStreaming = True
+    def stopStreaming(self): self.isStreaming = False
+    
+    def connect(self): self.isActive = True
+    def disconnect(self): self.isActive = False
+    
+
+
 class database:
-    quantos : int
-    vizinhos : dict
     lock : threading.Lock
+    nodes: dict # { 'ip' : Node}
+    iptobin: list # [ ('bin', 'ip') ]
+    streamTo: dict # { 'stream to ip' : [Node] }
+    mask = bin(24)
 
     def __init__(self):
-        self.quantos = 0
-        self.vizinhos = dict()
         self.lock = threading.Lock()
 
-    def acrescenta(self, add):
-        self.lock.acquire()
-        self.quantos+=1 
-        self.vizinhos[add[0]] = self.quantos
-        self.lock.release()
+    def connectNode(self, nodeIp):
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                node.connect()
+        finally:
+            self.lock.release()
+            
     
-    def remove(self, add):
-        self.lock.acquire()
-        self.quantos-=1 
-        self.vizinhos.pop(add[0])
-        self.lock.release()
+    def disconnectNode(self, nodeIp):
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                node.disconnect()
+        finally:
+            self.lock.release()
     
+    def getNeighbors(self, nodeIp):
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                return node.neighbors
+        finally:
+            self.lock.release()
+
+    def toBin(ip): return ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
+
+    def getStreamTo(self, clientIp):
+        binIp = self.toBin(clientIp)
+        selected = ('', 0)
+        for nodeBin, nodeIp in self.iptobin:
+            conta = 0
+            for i in range(len(nodeBin)):
+                #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
+                if int(binIp[i]) & int(nodeBin[i]): conta += 1
+                else:
+                    if conta > selected[1]: selected = (nodeIp, conta)
+                    break
+
+
     def show(self):
         self.lock.acquire()
         print(f"Tenho {self.quantos} vizinhos")
