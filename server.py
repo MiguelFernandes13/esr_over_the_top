@@ -1,4 +1,6 @@
+import fcntl
 import socket
+import struct
 import threading
 import time
 from VideoStream import VideoStream
