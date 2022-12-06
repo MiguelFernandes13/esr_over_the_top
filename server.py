@@ -44,13 +44,8 @@ def join_network(db : Database):
     print(f"Estou à escuta em {endereco}:{porta}")
 
     while True:
-        try:
-            client, add = s.accept()
-            threading.Thread(target=processamento, args=(db, add, client)).start()         
-        except Exception:
-            break
-
-    s.close()
+        client, add = s.accept()
+        threading.Thread(target=processamento, args=(db, add, client)).start()         
 
 #def start_streaming():
 #    try:
