@@ -24,7 +24,7 @@ def join_network(db : Database):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    endereco = '10.0.0.1'
+    endereco = '10.0.0.10'
     porta = 3000
 
     
