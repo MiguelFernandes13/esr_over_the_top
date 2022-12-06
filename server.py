@@ -23,9 +23,11 @@ def join_network(db : Database, data : str):
     add : tuple
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     endereco = '10.0.0.10'
     porta = 3000
 
+    
     s.bind((endereco, porta))
     s.listen(5)
 

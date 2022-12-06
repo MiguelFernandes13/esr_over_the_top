@@ -33,6 +33,9 @@ class Database:
 
     def __init__(self):
         self.lock = threading.Lock()
+        self.nodes = {}
+        self.iptobin = []
+        self.streamTo = {}
 
     def addNode(self, ip, interfaces, neighbors):
         try:
