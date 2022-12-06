@@ -15,6 +15,8 @@ def main():
     msg, _ = s.recvfrom(1024)
 
     print(f"Recebi {(msg.decode('utf-8'))}")
+    while True:
+        pass
 
 if __name__ == '__main__':
     main()
