@@ -108,7 +108,7 @@ def main():
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
 
-    threading.Thread(target=join_network, args=(db)).start()
+    threading.Thread(target=join_network, args=(db, )).start()
     #threading.Thread(target=servico2, args=(cenas,)).start()
     #threading.Thread(target=servico3, args=(cenas,)).start()           
 
