@@ -1,19 +1,20 @@
 import socket
 import threading
 import time
-import database
+from VideoStream import VideoStream
+import Database
 import json
 
-def processamento(add : tuple, s : socket.socket, data : str):
-    #cenas.acrescenta(add)
-    #sendo neighbors
-    s.sendto(data[add[1]]["neighbors"].encode('utf-8'), add)
+def processamento(db : Database, add : tuple, s : socket.socket, data : str):
+    node = data["Nodes"]['Ip' == add[0]]
+    db.acrescenta(add, node['Neighbors'], s, node['Interfaces'])
+    s.sendto(node['Neighbors'].encode('utf-8'), add[0])
 
 #def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
 #    cenas.remove(add)
 #    s.sendto("SUCESIUM!".encode('utf-8'), add)
 
-def join_network(data : str):
+def join_network(db : Database, data : str):
     s : socket.socket
     endereco : str
     porta : int
@@ -33,11 +34,38 @@ def join_network(data : str):
         try:
             connect, add = s.accept()
             #mensagem, add = s.recvfrom(1024)
-            threading.Thread(target=processamento, args=(mensagem, add, s, cenas)).start()         
+            threading.Thread(target=processamento, args=(db, add, s, data)).start()         
         except Exception:
             break
 
     s.close()
+
+#def start_streaming():
+#    try:
+#        video = VideoStream("video.mp4")
+#    except:
+#        print("Erro ao abrir o ficheiro")
+#        #enviar mensagem de erro
+#    #percorrer os vizinhos connectado e enviar o video
+#    for vizinho in database.vizinhos:
+        
+#def sendRtp(self):
+#    """Send RTP packets over UDP."""
+#    while True:
+#        self.clientInfo['event'].wait(0.05) 
+#			
+#        data = self.clientInfo['videoStream'].nextFrame()
+#        if data: 
+#            frameNumber = self.clientInfo['videoStream'].frameNbr()
+#            try:
+#                address = self.clientInfo['rtspSocket'][1][0]
+#                port = int(self.clientInfo['rtpPort'])
+#                self.clientInfo['rtpSocket'].sendto(self.makeRtp(data, frameNumber),(address,port))
+#            except:
+#                print("Connection Error")
+#				#print('-'*60)
+#				#traceback.print_exc(file=sys.stdout)
+#				#print('-'*60)
 
 #def servico2(cenas:database):
 #    s : socket.socket
@@ -68,14 +96,13 @@ def join_network(data : str):
 #       cenas.show() 
 
 def main():
-    #cenas : database.database
+    config_file = open("configuration.json", "r")
+    config_text = config_file.read()
+    data = json.loads(config_text)
 
-    #cenas = database.database()
-    config_file = open("config.txt", "r")
-    data = json.load(config_file)
-        
-    
-    threading.Thread(target=join_network, args=(data)).start()
+    db = Database.Database()
+
+    threading.Thread(target=join_network, args=(db, data)).start()
     #threading.Thread(target=servico2, args=(cenas,)).start()
     #threading.Thread(target=servico3, args=(cenas,)).start()           
 

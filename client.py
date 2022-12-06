@@ -3,7 +3,6 @@ import sys
 
 def main():
     s : socket.socket
-    mensagem : str
     endereco : str
     porta : int
 

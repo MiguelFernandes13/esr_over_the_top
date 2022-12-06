@@ -1,25 +1,28 @@
 import threading
 import time
+import socket
 
-class database:
+
+class Database:
     quantos : int
-    vizinhos : dict
+    sockets : dict
+    interfaces : dict
+    vizinhos : dict 
     lock : threading.Lock
 
     def __init__(self):
-        self.quantos = 0
         self.vizinhos = dict()
         self.lock = threading.Lock()
 
-    def acrescenta(self, add):
+    def acrescenta(self, add, v, s, i):
         self.lock.acquire()
-        self.quantos+=1 
-        self.vizinhos[add[0]] = self.quantos
+        self.sockets[add] = s
+        self.interfaces[add] = i
+        self.vizinhos[add].append(v)
         self.lock.release()
     
     def remove(self, add):
         self.lock.acquire()
-        self.quantos-=1 
         self.vizinhos.pop(add[0])
         self.lock.release()
     
