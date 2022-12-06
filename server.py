@@ -9,7 +9,7 @@ import json
 
 def processamento(db : Database, add : tuple, s : socket.socket):
     db.connectNode(add[0])
-    s.sendto([x.encode('utf-8') for x in db.getNeighbors(add[0])], add[0])
+    s.sendto("".join([x.encode('utf-8') for x in db.getNeighbors(add[0])]), add[0])
 
 #def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
 #    cenas.remove(add)
