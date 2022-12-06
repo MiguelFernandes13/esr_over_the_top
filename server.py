@@ -3,6 +3,7 @@ import socket
 import struct
 import threading
 import time
+from signal import signal, SIGPIPE, SIG_DFL 
 from VideoStream import VideoStream
 from Database import Database
 import json
@@ -23,6 +24,7 @@ def join_network(db : Database):
     add : tuple
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
 
     endereco = '10.0.0.10'
     porta = 3000
@@ -99,6 +101,7 @@ def join_network(db : Database):
 #       cenas.show() 
 
 def main():
+    signal(SIGPIPE,SIG_DFL) 
     config_file = open("configuration.json", "r")
     config_text = config_file.read()
     data = json.loads(config_text)
@@ -107,7 +110,7 @@ def main():
 
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
-
+    
     threading.Thread(target=join_network, args=(db, )).start()
     #threading.Thread(target=servico2, args=(cenas,)).start()
     #threading.Thread(target=servico3, args=(cenas,)).start()           
