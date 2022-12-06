@@ -7,15 +7,15 @@ from VideoStream import VideoStream
 from Database import Database
 import json
 
-def processamento(db : Database, add : tuple, s : socket.socket, data : str):
+def processamento(db : Database, add : tuple, s : socket.socket):
     db.connectNode(add[0])
-    s.sendto(db.getNeighbors(add[0]).encode('utf-8'), add[0])
+    s.sendto([x.encode('utf-8') for x in db.getNeighbors(add[0])], add[0])
 
 #def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
 #    cenas.remove(add)
 #    s.sendto("SUCESIUM!".encode('utf-8'), add)
 
-def join_network(db : Database, data : str):
+def join_network(db : Database):
     s : socket.socket
     endereco : str
     porta : int
@@ -37,7 +37,7 @@ def join_network(db : Database, data : str):
         try:
             connect, add = s.accept()
             #mensagem, add = s.recvfrom(1024)
-            threading.Thread(target=processamento, args=(db, add, s, data)).start()         
+            threading.Thread(target=processamento, args=(db, add, s)).start()         
         except Exception:
             break
 
@@ -108,7 +108,7 @@ def main():
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
 
-    threading.Thread(target=join_network, args=(db, data)).start()
+    threading.Thread(target=join_network, args=(db)).start()
     #threading.Thread(target=servico2, args=(cenas,)).start()
     #threading.Thread(target=servico3, args=(cenas,)).start()           
 
