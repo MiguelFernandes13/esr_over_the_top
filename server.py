@@ -125,7 +125,7 @@ def keepAlive(db: Database):
                 #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
                 t = time.time()
                 jumps = 1
-                message = f'KEEPALIVE {t} {jumps}'
+                message = f'KEEPALIVE {t} {jumps} {True}'
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((i.ip, 5000))
                 s.sendall(message.encode('utf-8'))
@@ -146,6 +146,8 @@ def main():
 
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
+
+    db.addNeighbors(data['Neighbors']) 
 
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream, args=(db, )).start()
