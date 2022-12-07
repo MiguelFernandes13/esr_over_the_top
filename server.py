@@ -22,7 +22,7 @@ def processamento(db : Database, add : tuple, client : socket):
         client.sendall(str.encode(reply))
     client.close()
 
-def streaming(add : tuple,s: socket, db : database):
+def streaming(add : tuple,s: socket, db : Database):
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     session = randint(100000, 999999)
     s.sendto(str(session).encode('utf-8'), add)
