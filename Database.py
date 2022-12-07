@@ -44,13 +44,13 @@ class Database:
     def __init__(self):
         self.lock = threading.Lock()
         self.nodes = {}
-        self.neighbors = []
+        self.neighbors = {}
         self.iptobin = []
         self.streamTo = {}
         self.port = 4001
 
 
-    def addNeighbors(self, neighbors):
+    def addNeighbors(self, neighbors : list):
         try:
             self.lock.acquire()
             for neighbor in neighbors:
@@ -111,7 +111,7 @@ class Database:
         finally:
             self.lock.release()
 
-    def toBin(ip): return ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
+    def toBin(self, ip): return ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
 
     def getStreamTo(self, clientIp):
         binIp = self.toBin(clientIp)
