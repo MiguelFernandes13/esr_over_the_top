@@ -1,9 +1,11 @@
 import fcntl
+from random import randint
 import socket
 import struct
 import threading
 import time
 from signal import signal, SIGPIPE, SIG_DFL 
+from RtpPacket import RtpPacket
 from VideoStream import VideoStream
 from Database import Database
 import json
@@ -20,9 +22,11 @@ def processamento(db : Database, add : tuple, client : socket):
         client.sendall(str.encode(reply))
     client.close()
 
-#def processamento2(mensagem : bytes, add : tuple, s : socket.socket, cenas : database):
-#    cenas.remove(add)
-#    s.sendto("SUCESIUM!".encode('utf-8'), add)
+def streaming(add : tuple,s: socket, db : database):
+    rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    session = randint(100000, 999999)
+    s.sendto(str(session).encode('utf-8'), add)
+    db.joinStream(add[0], session, rtpSocket)
 
 def join_network(db : Database):
     s : socket.socket
@@ -47,60 +51,60 @@ def join_network(db : Database):
         client, add = s.accept()
         threading.Thread(target=processamento, args=(db, add, client)).start()         
 
-#def start_streaming():
-#    try:
-#        video = VideoStream("video.mp4")
-#    except:
-#        print("Erro ao abrir o ficheiro")
-#        #enviar mensagem de erro
-#    #percorrer os vizinhos connectado e enviar o video
-#    for vizinho in database.vizinhos:
-        
-#def sendRtp(self):
-#    """Send RTP packets over UDP."""
-#    while True:
-#        self.clientInfo['event'].wait(0.05) 
-#			
-#        data = self.clientInfo['videoStream'].nextFrame()
-#        if data: 
-#            frameNumber = self.clientInfo['videoStream'].frameNbr()
-#            try:
-#                address = self.clientInfo['rtspSocket'][1][0]
-#                port = int(self.clientInfo['rtpPort'])
-#                self.clientInfo['rtpSocket'].sendto(self.makeRtp(data, frameNumber),(address,port))
-#            except:
-#                print("Connection Error")
-#				#print('-'*60)
-#				#traceback.print_exc(file=sys.stdout)
-#				#print('-'*60)
+def join_stream(db : Database):
+    s : socket.socket
+    endereco : str
+    porta : int
+    add : tuple
 
-#def servico2(cenas:database):
-#    s : socket.socket
-#    endereco : str
-#    porta : int
-#    mensagem : bytes
-#    add : tuple
-#
-#    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#    endereco = '10.0.0.10'
-#    porta = 4000
-#
-#    s.bind((endereco, porta))
-#
-#    print(f"Estou à escuta em {endereco}:{porta}")
-#
-#    while True:
-#        try:
-#            mensagem, add = s.recvfrom(1024)
-#            threading.Thread(target=processamento2, args=(mensagem, add, s, cenas)).start()         
-#        except Exception:
-#            break
-#
-#    s.close()
-#
-#def servico3(cenas:database):
-#    while True:
-#       cenas.show() 
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    endereco = '10.0.0.10'
+    porta = 4000
+
+    s.bind((endereco, porta))
+    s.listen(5)
+
+    while True:
+        _, add = s.recvfrom(1024)
+        threading.Thread(target=streaming, args=(add, s, db)).start()
+
+
+def makeRtp(payload, frameNbr):
+    """RTP-packetize the video data."""
+    version = 2
+    padding = 0
+    extension = 0
+    cc = 0
+    marker = 0
+    pt = 26 # MJPEG type
+    seqnum = frameNbr
+    ssrc = 0 
+	
+    rtpPacket = RtpPacket()
+	
+    rtpPacket.encode(version, padding, extension, cc, seqnum, marker, pt, ssrc, payload)
+	
+    return rtpPacket.getPacket()
+        
+def sendRtp(self, db : Database,video : VideoStream):
+    """Send RTP packets over UDP."""
+    while True:
+        #self.clientInfo['event'].wait(0.05) 
+			
+        data = video.nextFrame()
+        if data: 
+            frameNumber = video.frameNbr()
+            try:
+                for i in db.streamTo['10.0.0.10'] :
+                    address = i.ip
+                    port = int(i.rtpPort)
+                    i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
+            except:
+                print("Connection Error")
+				#print('-'*60)
+				#traceback.print_exc(file=sys.stdout)
+				#print('-'*60)
+
 
 def main():
     signal(SIGPIPE,SIG_DFL) 
@@ -108,14 +112,15 @@ def main():
     config_text = config_file.read()
     data = json.loads(config_text)
 
+    video = VideoStream("movie.Mjpeg")
     db = Database()
 
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
     
     threading.Thread(target=join_network, args=(db, )).start()
-    #threading.Thread(target=servico2, args=(cenas,)).start()
-    #threading.Thread(target=servico3, args=(cenas,)).start()           
+    threading.Thread(target=join_stream, args=(db,)).start()
+    threading.Thread(target=sendRtp, args=(video, db,)).start()           
 
 if __name__ == '__main__':
     main()
