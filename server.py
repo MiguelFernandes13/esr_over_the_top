@@ -97,12 +97,11 @@ def sendRtp(db : Database, video : VideoStream):
         if data: 
             frameNumber = video.frameNbr()
             try:
-                if(db.streamTo.get("10.0.0.10")):
-                    for i in db.streamTo.get("10.0.0.10"):
-                        address = i.ip
-                        port = int(i.rtpPort)
-                        print(f"Sending frame {frameNumber} to {address}:{port}")
-                        i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
+                for i in db.streamTo.get("10.0.0.10"):
+                    address = i.ip
+                    port = int(i.rtpPort)
+                    print(f"Sending frame {frameNumber} to {address}:{port}")
+                    i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
             except:
                 print("Connection Error")
 				#print('-'*60)
