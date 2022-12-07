@@ -86,12 +86,12 @@ def makeRtp(payload, frameNbr):
 	
     return rtpPacket.getPacket()
         
-def sendRtp(self, db : Database,video : VideoStream):
+def sendRtp(db : Database, video : VideoStream):
     """Send RTP packets over UDP."""
     while True:
         #self.clientInfo['event'].wait(0.05) 
 			
-        data = video.nextFrame()
+        data = video.next_frame()
         if data: 
             frameNumber = video.frameNbr()
             try:
@@ -120,7 +120,7 @@ def main():
     
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream, args=(db,)).start()
-    threading.Thread(target=sendRtp, args=(video, db,)).start()           
+    threading.Thread(target=sendRtp, args=(db, video)).start()           
 
 if __name__ == '__main__':
     main()
