@@ -109,7 +109,7 @@ def sendRtp(db : Database, video : VideoStream):
 
 
 def main():
-    signal(SIGPIPE,SIG_DFL) 
+    #signal(SIGPIPE,SIG_DFL) 
     config_file = open("configuration.json", "r")
     config_text = config_file.read()
     data = json.loads(config_text)
