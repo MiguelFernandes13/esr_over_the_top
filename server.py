@@ -121,7 +121,7 @@ def keepAlive(db: Database):
         time.sleep(10)
         print("KeepAlive ", db.neighbors)
         for ip in db.neighbors:
-            node = db.getNeighbors(ip)
+            node = db.getNode(ip)
             if node.isActive():
                 try:
                     #criar tantos sockets quantos os vizinhos

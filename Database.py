@@ -80,6 +80,12 @@ class Database:
         finally:
             self.lock.release()
             
+    def getNode(self, nodeIp) -> Node:
+        try:
+            self.lock.acquire()
+            return self.nodes[nodeIp]
+        finally:
+            self.lock.release()
     
     def disconnectNode(self, nodeIp):
         try:
@@ -102,6 +108,7 @@ class Database:
                 self.streamTo['10.0.0.10'].append(node)
         finally:
             self.lock.release()
+
     
     def getNeighbors(self, nodeIp):
         try:
