@@ -48,36 +48,38 @@ def getStream(stream_socket: socket):
                     print("Frame number: " + frameNbr)
                     #updateMovie(writeFrame(rtpPacket.getPayload()))            
 
-def watchStream(endereco: str):
+def watchStream(enderecoServidor: str, enderecoCliente: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((endereco, 4000))
+    s.connect((enderecoServidor, 4000))
 
     #s.sendall("Watch Stream".encode('utf-8'))
 
     msg, _ = s.recvfrom(1024)
     stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print(msg.decode('utf-8'))
-    stream_socket.bind((endereco, int(msg.decode('utf-8'))))
+    stream_socket.bind((enderecoCliente, int(msg.decode('utf-8'))))
 
     threading.Thread(target=getStream, args=(stream_socket,)).start()
     
 def main():
     s: socket.socket
-    endereco: str
+    enderecoServidor: str
+    enderecoCliente: str
     porta: int
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    endereco = '10.0.0.10'
+    enderecoServidor = '10.0.0.10'
+    enderecoCliente = '10.0.1.2'
     porta = 3000
 
-    s.connect((endereco, porta))
+    s.connect((enderecoServidor, porta))
 
     msg, _ = s.recvfrom(1024)
 
     print(f"Recebi {(msg.decode('utf-8'))}")
 
     threading.Thread(target=keepAlive, args=(s,)).start()
-    watchStream(endereco)
+    watchStream(enderecoServidor, enderecoCliente)
 
 
 if __name__ == '__main__':
