@@ -90,15 +90,17 @@ def sendRtp(db : Database, video : VideoStream):
     """Send RTP packets over UDP."""
     while True:
         #self.clientInfo['event'].wait(0.05) 
+        time.sleep(1)
 			
         data = video.next_frame()
         if data: 
             frameNumber = video.frameNbr()
             try:
-                for i in db.streamTo['10.0.0.10'] :
-                    address = i.ip
-                    port = int(i.rtpPort)
-                    i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
+                if(db.streamTo.get("10.0.0.10")):
+                    for i in db.streamTo.get("10.0.0.10"):
+                        address = i.ip
+                        port = int(i.rtpPort)
+                        i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
             except:
                 print("Connection Error")
 				#print('-'*60)
