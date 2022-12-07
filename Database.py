@@ -45,7 +45,7 @@ class Database:
         self.nodes = {}
         self.iptobin = []
         self.streamTo = {}
-        self.port = 6000
+        self.port = 4001
 
     def addNode(self, ip, interfaces, neighbors):
         try:
