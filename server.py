@@ -14,13 +14,13 @@ import json
 def processamento(db: Database, add: tuple, client: socket):
     db.connectNode(add[0])
     client.send(str(db.getNeighbors(add[0])).encode('utf-8'))
-    while True:
-        data = client.recv(2048)
-        message = data.decode('utf-8')
-        if message == 'BYE':
-            break
-        reply = f'Server: {message}'
-        client.sendall(str.encode(reply))
+    #while True:
+    #    data = client.recv(2048)
+    #    message = data.decode('utf-8')
+    #    if message == 'BYE':
+    #        break
+    #    reply = f'Server: {message}'
+    #    client.sendall(str.encode(reply))
     client.close()
 
 
@@ -115,6 +115,24 @@ def sendRtp(db: Database, video: VideoStream):
 #print('-'*60)
 #traceback.print_exc(file=sys.stdout)
 #print('-'*60)
+
+def keepAlive(db: Database):
+    while True:
+        time.sleep(10)
+        for i in db.neighbords:
+            try:
+                #criar tantos sockets quantos os vizinhos
+                #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
+                t = time.time()
+                jumps = 1
+                message = f'KEEPALIVE {t} {jumps}'
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((i.ip, 5000))
+                s.sendall(message.encode('utf-8'))
+                s.close()
+
+            except:
+                db.disconnectNode(i)
 
 
 def main():

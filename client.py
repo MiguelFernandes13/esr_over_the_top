@@ -12,10 +12,32 @@ from RtpPacket import RtpPacket
 # CACHE_FILE_NAME = "cache-"
 # CACHE_FILE_EXT = ".jpg"
 
-def keepAlive(s: socket):
+def fload_keepAlive(client : socket):
+    msg,add = client.recvfrom(1024)
+    msg_decode = msg.decode('utf-8')
+    time_receveid = msg_decode[1]
+    jump = msg_decode[2]
+    #atualizar o tempo de vida do cliente
+    #atualizar o numero de saltos do cliente
+    #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
+    #enviar tambem se o nodo esta a fazer streaming
+    #for i in viznhos:
+    #   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #   s.connect((i.ip, 5000))
+    #   message = f'KEEPALIVE {time.time() - time_receveid} {jump + 1} {streaming}'
+    #   s.sendall(message.encode('utf-8'))
+    client.close()
+    
+
+
+def keepAlive(enderecoCliente: str):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((enderecoCliente, 5000))
+    s.listen(5)
     while True:
-        msg,_ = s.recvfrom(1024)
-        print(f"Recebi {(msg.decode('utf-8'))}")
+        client, add = s.accept()
+        threading.Thread(target=fload_keepAlive, args=(client,)).start()
+        
 
 #def updateMovie(self, imageFile):
 #    """Update the image file as video frame in the GUI."""
@@ -78,7 +100,7 @@ def main():
 
     print(f"Recebi {(msg.decode('utf-8'))}")
 
-    threading.Thread(target=keepAlive, args=(s,)).start()
+    threading.Thread(target=keepAlive, args=(enderecoCliente, )).start()
     watchStream(enderecoServidor, enderecoCliente)
 
 
