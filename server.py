@@ -152,6 +152,7 @@ def main():
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream, args=(db, )).start()
     threading.Thread(target=sendRtp, args=(db, video)).start()
+    threading.Thread(target=keepAlive, args=(db, )).start()
 
 
 if __name__ == '__main__':
