@@ -16,8 +16,7 @@ class NodeClient:
         self.serverAddr = serveraddr
         self.serverPort = serverport
         self.clientAddr = clientaddr
-        self.db = NodeDataBase()
-        self.socket
+        self.db = NodeDataBase(clientaddr)
 
     def fload_keepAlive(self, client: socket):
         msg, add = client.recvfrom(1024)
@@ -104,5 +103,5 @@ class NodeClient:
         print(f"Recebi {(msg.decode('utf-8'))}")
         self.db.addNeighbors(ast.literal_eval(msg.decode('utf-8')))
 
-        threading.Thread(target=self.keepAlive, args=()).start()
+        threading.Thread(target=self.keepAlive).start()
         self.watchStream()
