@@ -24,9 +24,9 @@ class NodeClient:
         msg_decode = msg.decode('utf-8')
         print("Mensagem decodificada: ", msg_decode)
         time_receveid = msg_decode[1]
-        time_ = time.time() - time_receveid
-        jump = msg_decode[2]
-        stream = msg_decode[3]
+        time_ = time.time() - float(time_receveid)
+        jump = int(msg_decode[2])
+        stream = bool(msg_decode[3])
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
         self.db.update(add[0], time_, jump, stream)
