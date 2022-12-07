@@ -24,9 +24,9 @@ def processamento(db : Database, add : tuple, client : socket):
 
 def streaming(add : tuple, s: socket, db : Database):
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    session = randint(100000, 999999)
-    s.sendto(str(session).encode('utf-8'), add)
-    db.joinStream(add[0], session, rtpSocket)
+    # session = randint(4000, 5000)
+    db.joinStream(add[0], rtpSocket)
+    s.send(str(db.nodes[add[0]].port).encode('utf-8'))
 
 def join_network(db : Database):
     s : socket.socket

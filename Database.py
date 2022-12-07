@@ -8,7 +8,8 @@ class Node:
     neighbors: list # Node
     isActive: bool
     isStreaming: bool
-    session : int
+    #session : int
+    port : int
     rtpSocket : socket
 
     def __init__(self, ip, interfaces, neighbors) -> None:
@@ -18,9 +19,10 @@ class Node:
         self.isActive = False
         self.isStreaming = False
     
-    def startStreaming(self, session : int, s : socket): 
+    def startStreaming(self, port: int, s : socket): 
         self.isStreaming = True
-        self.session = session
+     #   self.session = session
+        self.port = port
         self.rtpSocket = s
 
     def stopStreaming(self): self.isStreaming = False
@@ -36,12 +38,14 @@ class Database:
     iptobin: list # [ ('bin', 'ip') ]
     streamTo: dict # { 'stream to ip' : [Node] }
     mask = bin(24)
+    port : int
 
     def __init__(self):
         self.lock = threading.Lock()
         self.nodes = {}
         self.iptobin = []
         self.streamTo = {}
+        self.port = 6000
 
     def addNode(self, ip, interfaces, neighbors):
         try:
@@ -70,12 +74,13 @@ class Database:
         finally:
             self.lock.release()
 
-    def joinStream(self, nodeIp, session, s):
+    def joinStream(self, nodeIp, s):
         try:
             self.lock.acquire()
             node: Node
             if node := self.nodes.get(nodeIp):
-                node.startStreaming(session, s)
+                node.startStreaming(self.port, s)
+                self.port += 1
                 self.streamTo['10.0.0.10'].append(node)
         finally:
             self.lock.release()

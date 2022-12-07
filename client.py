@@ -52,11 +52,13 @@ def watchStream(endereco: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((endereco, 4000))
 
-    s.sendall("Watch Stream".encode('utf-8'))
+    #s.sendall("Watch Stream".encode('utf-8'))
 
     msg, _ = s.recvfrom(1024)
     stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print(msg.decode('utf-8'))
     stream_socket.bind((endereco, int(msg.decode('utf-8'))))
+
     threading.Thread(target=getStream, args=(stream_socket,)).start()
     
 def main():
