@@ -119,7 +119,6 @@ def sendRtp(db: Database, video: VideoStream):
 def keepAlive(db: Database):
     while True:
         time.sleep(10)
-        print("KeepAlive ", db.neighbors)
         for ip in db.neighbors:
             node = db.getNode(ip)
             if node.active():

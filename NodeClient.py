@@ -18,10 +18,11 @@ class NodeClient:
         self.clientAddr = clientaddr
         self.db = NodeDataBase(clientaddr)
 
-    def fload_keepAlive(self, client: socket):
-        msg, add = client.recvfrom(1024)
+    def fload_keepAlive(self, client: socket, add: tuple):
+        msg,_ = client.recvfrom(1024)
         print(f"Mensagem recebida {msg} de {add[0]}:{add[1]}")
         msg_decode = msg.decode('utf-8')
+        print("Mensagem decodificada: ", msg_decode)
         time_receveid = msg_decode[1]
         time_ = time.time() - time_receveid
         jump = msg_decode[2]
@@ -46,7 +47,7 @@ class NodeClient:
         while True:
             client, add = s.accept()
             threading.Thread(target=self.fload_keepAlive,
-                             args=(client, )).start()
+                             args=(client, add)).start()
 
     #def updateMovie(self, imageFile):
     #    """Update the image file as video frame in the GUI."""
