@@ -22,7 +22,7 @@ def processamento(db : Database, add : tuple, client : socket):
         client.sendall(str.encode(reply))
     client.close()
 
-def streaming(add : tuple,s: socket, db : Database):
+def streaming(add : tuple, s: socket, db : Database):
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     session = randint(100000, 999999)
     s.sendto(str(session).encode('utf-8'), add)
@@ -65,8 +65,8 @@ def join_stream(db : Database):
     s.listen(5)
 
     while True:
-        _, add = s.recvfrom(1024)
-        threading.Thread(target=streaming, args=(add, s, db)).start()
+        client, add = s.accept()
+        threading.Thread(target=streaming, args=(add, client, db)).start()
 
 
 def makeRtp(payload, frameNbr):
