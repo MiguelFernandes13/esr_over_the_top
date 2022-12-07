@@ -66,6 +66,7 @@ def join_stream(db : Database):
 
     while True:
         client, add = s.accept()
+        print(f"Conectado a {add[0]}:{add[1]}")
         threading.Thread(target=streaming, args=(add, client, db)).start()
 
 
@@ -120,6 +121,7 @@ def main():
 
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
+
     
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream, args=(db,)).start()
