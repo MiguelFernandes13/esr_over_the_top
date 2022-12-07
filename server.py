@@ -119,7 +119,7 @@ def sendRtp(db: Database, video: VideoStream):
 def keepAlive(db: Database):
     while True:
         time.sleep(10)
-        for i in db.neighbords:
+        for i in db.neighbors:
             try:
                 #criar tantos sockets quantos os vizinhos
                 #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
