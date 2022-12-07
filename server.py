@@ -119,20 +119,23 @@ def sendRtp(db: Database, video: VideoStream):
 def keepAlive(db: Database):
     while True:
         time.sleep(10)
-        for i in db.neighbors:
-            try:
-                #criar tantos sockets quantos os vizinhos
-                #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
-                t = time.time()
-                jumps = 1
-                message = f'KEEPALIVE {t} {jumps} {True}'
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((i.ip, 5000))
-                s.sendall(message.encode('utf-8'))
-                s.close()
+        print("KeepAlive ", db.neighbors)
+        for node in db.neighbors:
+            if node.isActive:
+                try:
+                    #criar tantos sockets quantos os vizinhos
+                    #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
+                    t = time.time()
+                    jumps = 1
+                    message = f'KEEPALIVE {t} {jumps} {True}'
+                    print("Sending: ", message)
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.connect((node.ip, 5000))
+                    s.sendall(message.encode('utf-8'))
+                    s.close()
 
-            except:
-                db.disconnectNode(i)
+                except:
+                    db.disconnectNode(node.ip)
 
 
 def main():

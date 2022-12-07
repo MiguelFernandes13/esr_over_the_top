@@ -35,7 +35,7 @@ class Node:
 class Database:
     lock : threading.Lock
     nodes: dict # { 'ip' : Node}
-    neighbors : list # [ips]
+    neighbors : dict # [ips]
     iptobin: list # [ ('bin', 'ip') ]
     streamTo: dict # { 'stream to ip' : [Node] }
     mask = bin(24)
@@ -53,7 +53,11 @@ class Database:
     def addNeighbors(self, neighbors):
         try:
             self.lock.acquire()
-            self.neighbors.extend(neighbors)
+            for neighbor in neighbors:
+                if not neighbor in self.neighbors:
+                    node = self.nodes.get(neighbor)
+                    self.neighbors[neighbor] = node
+                    self.iptobin.append((self.toBin(neighbor), neighbor))
         finally:
             self.lock.release()
 
