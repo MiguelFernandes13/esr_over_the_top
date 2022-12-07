@@ -82,7 +82,7 @@ class Database:
                 node.startStreaming(self.port, s)
                 self.port += 1
                 if not self.streamTo.get(nodeIp):
-                    self.streamTo[nodeIp] = []
+                    self.streamTo['10.0.0.10'] = []
                 self.streamTo['10.0.0.10'].append(node)
         finally:
             self.lock.release()
