@@ -4,13 +4,14 @@ import socket
 import struct
 import threading
 import time
-from signal import signal, SIGPIPE, SIG_DFL 
+from signal import signal, SIGPIPE, SIG_DFL
 from RtpPacket import RtpPacket
 from VideoStream import VideoStream
 from Database import Database
 import json
 
-def processamento(db : Database, add : tuple, client : socket):
+
+def processamento(db: Database, add: tuple, client: socket):
     db.connectNode(add[0])
     client.send(str(db.getNeighbors(add[0])).encode('utf-8'))
     while True:
@@ -22,26 +23,27 @@ def processamento(db : Database, add : tuple, client : socket):
         client.sendall(str.encode(reply))
     client.close()
 
-def streaming(add : tuple, s: socket, db : Database):
+
+def streaming(add: tuple, s: socket, db: Database):
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # session = randint(4000, 5000)
     db.joinStream(add[0], rtpSocket)
     s.send(str(db.nodes[add[0]].port).encode('utf-8'))
+    print("Stream To: ", db.streamTo['10.0.0.10'][0].port)
 
-def join_network(db : Database):
-    s : socket.socket
-    endereco : str
-    porta : int
-    mensagem : bytes
-    add : tuple
+
+def join_network(db: Database):
+    s: socket.socket
+    endereco: str
+    porta: int
+    mensagem: bytes
+    add: tuple
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
 
     endereco = '10.0.0.10'
     porta = 3000
 
-    
     s.bind((endereco, porta))
     s.listen(5)
 
@@ -49,13 +51,14 @@ def join_network(db : Database):
 
     while True:
         client, add = s.accept()
-        threading.Thread(target=processamento, args=(db, add, client)).start()         
+        threading.Thread(target=processamento, args=(db, add, client)).start()
 
-def join_stream(db : Database):
-    s : socket.socket
-    endereco : str
-    porta : int
-    add : tuple
+
+def join_stream(db: Database):
+    s: socket.socket
+    endereco: str
+    porta: int
+    add: tuple
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     endereco = '10.0.0.10'
@@ -77,42 +80,45 @@ def makeRtp(payload, frameNbr):
     extension = 0
     cc = 0
     marker = 0
-    pt = 26 # MJPEG type
+    pt = 26  # MJPEG type
     seqnum = frameNbr
-    ssrc = 0 
-	
+    ssrc = 0
+
     rtpPacket = RtpPacket()
-	
-    rtpPacket.encode(version, padding, extension, cc, seqnum, marker, pt, ssrc, payload)
-	
+
+    rtpPacket.encode(version, padding, extension, cc, seqnum, marker, pt, ssrc,
+                     payload)
+
     return rtpPacket.getPacket()
-        
-def sendRtp(db : Database, video : VideoStream):
+
+
+def sendRtp(db: Database, video: VideoStream):
     """Send RTP packets over UDP."""
     while True:
-        #self.clientInfo['event'].wait(0.05) 
+        #self.clientInfo['event'].wait(0.05)
         time.sleep(1)
-			
+
         data = video.next_frame()
-        if data: 
+        if data:
             frameNumber = video.frameNbr()
             try:
-                if(db.streamTo.get("10.0.0.10")):
-                    print((db.streamTo.get("10.0.0.10")).ip)
-                    for i in db.streamTo.get("10.0.0.10"):
-                        address = i.ip
-                        port = int(i.rtpPort)
-                        print(f"Sending frame {frameNumber} to {address}:{port}")
-                        i.rtpSocket.sendto(makeRtp(data, frameNumber),(address,port))
+                for i in db.streamTo.get('10.0.0.10'):
+                    print(i.port, i.ip)
+                    address = i.ip
+                    port = int(i.port)
+                    print(f"Sending frame {frameNumber} to {address}:{port}")
+                    i.rtpSocket.sendto(makeRtp(data, frameNumber),
+                                       (address, port))
             except:
                 print("Connection Error")
-				#print('-'*60)
-				#traceback.print_exc(file=sys.stdout)
-				#print('-'*60)
+
+#print('-'*60)
+#traceback.print_exc(file=sys.stdout)
+#print('-'*60)
 
 
 def main():
-    #signal(SIGPIPE,SIG_DFL) 
+    #signal(SIGPIPE,SIG_DFL)
     config_file = open("configuration.json", "r")
     config_text = config_file.read()
     data = json.loads(config_text)
@@ -123,10 +129,10 @@ def main():
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
 
-    
     threading.Thread(target=join_network, args=(db, )).start()
-    threading.Thread(target=join_stream, args=(db,)).start()
-    threading.Thread(target=sendRtp, args=(db, video)).start()           
+    threading.Thread(target=join_stream, args=(db, )).start()
+    threading.Thread(target=sendRtp, args=(db, video)).start()
+
 
 if __name__ == '__main__':
     main()
