@@ -1,7 +1,10 @@
 import socket
 import sys
 import threading
+import time
 from tkinter import *
+import ast
+from NodeDatabase import NodeDataBase
 #from PIL import Image, ImageTk
 
 from RtpPacket import RtpPacket
@@ -12,31 +15,35 @@ from RtpPacket import RtpPacket
 # CACHE_FILE_NAME = "cache-"
 # CACHE_FILE_EXT = ".jpg"
 
-def fload_keepAlive(client : socket):
+def fload_keepAlive(db : NodeDataBase, client : socket):
     msg,add = client.recvfrom(1024)
     msg_decode = msg.decode('utf-8')
     time_receveid = msg_decode[1]
+    time_ = time.time() - time_receveid
     jump = msg_decode[2]
+    stream = msg_decode[3]
     #atualizar o tempo de vida do cliente
     #atualizar o numero de saltos do cliente
+    db.update(add[0], time_, jump, stream)
     #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
     #enviar tambem se o nodo esta a fazer streaming
-    #for i in viznhos:
-    #   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #   s.connect((i.ip, 5000))
-    #   message = f'KEEPALIVE {time.time() - time_receveid} {jump + 1} {streaming}'
-    #   s.sendall(message.encode('utf-8'))
+    for i in db.neighbords:
+        if i != add[0]:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((i, 5000))
+            message = f'KEEPALIVE {time_} {jump + 1} {db.streaming}'
+            s.sendall(message.encode('utf-8'))
     client.close()
     
 
 
-def keepAlive(enderecoCliente: str):
+def keepAlive(db : NodeDataBase, enderecoCliente: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((enderecoCliente, 5000))
     s.listen(5)
     while True:
         client, add = s.accept()
-        threading.Thread(target=fload_keepAlive, args=(client,)).start()
+        threading.Thread(target=fload_keepAlive, args=(db, client,)).start()
         
 
 #def updateMovie(self, imageFile):
@@ -88,7 +95,10 @@ def main():
     enderecoServidor: str
     enderecoCliente: str
     porta: int
+    db : NodeDataBase
 
+    db = NodeDataBase()
+    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     enderecoServidor = '10.0.0.10'
     enderecoCliente = '10.0.1.2'
@@ -99,8 +109,9 @@ def main():
     msg, _ = s.recvfrom(1024)
 
     print(f"Recebi {(msg.decode('utf-8'))}")
+    db.addNeighbors(ast.literal_eval(msg.decode('utf-8')))
 
-    threading.Thread(target=keepAlive, args=(enderecoCliente, )).start()
+    threading.Thread(target=keepAlive, args=(db, enderecoCliente, )).start()
     watchStream(enderecoServidor, enderecoCliente)
 
 
