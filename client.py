@@ -45,7 +45,7 @@ def getStream(stream_socket: socket):
 									
                 if currFrameNbr > frameNbr: # Discard the late packet
                     frameNbr = currFrameNbr
-                    print("Frame number: " + frameNbr)
+                    print("Frame number: " + str(frameNbr))
                     #updateMovie(writeFrame(rtpPacket.getPayload()))            
 
 def watchStream(enderecoServidor: str, enderecoCliente: str):
