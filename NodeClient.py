@@ -1,6 +1,10 @@
 import socket
+import sys
 import threading
+import time
 from tkinter import *
+import ast
+from NodeDatabase import NodeDataBase
 #from PIL import Image, ImageTk
 
 from RtpPacket import RtpPacket
@@ -12,21 +16,27 @@ class NodeClient:
         self.serverAddr = serveraddr
         self.serverPort = serverport
         self.clientAddr = clientaddr
+        self.db = NodeDataBase()
+        self.socket
 
     def fload_keepAlive(self, client: socket):
         msg, add = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8')
         time_receveid = msg_decode[1]
+        time_ = time.time() - time_receveid
         jump = msg_decode[2]
+        stream = msg_decode[3]
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
+        self.db.update(add[0], time_, jump, stream)
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
-        #for i in viznhos:
-        #   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #   s.connect((i.ip, 5000))
-        #   message = f'KEEPALIVE {time.time() - time_receveid} {jump + 1} {streaming}'
-        #   s.sendall(message.encode('utf-8'))
+        for i in self.db.neighbords:
+            if i != add[0]:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((i, 5000))
+                message = f'KEEPALIVE {time_} {jump + 1} {self.db.streaming}'
+                s.sendall(message.encode('utf-8'))
         client.close()
 
     def keepAlive(self):
@@ -35,7 +45,8 @@ class NodeClient:
         s.listen(5)
         while True:
             client, add = s.accept()
-            threading.Thread(target=self.fload_keepAlive, args=(self,client)).start()
+            threading.Thread(target=self.fload_keepAlive,
+                             args=(client, )).start()
 
     #def updateMovie(self, imageFile):
     #    """Update the image file as video frame in the GUI."""
@@ -83,6 +94,7 @@ class NodeClient:
 
     def main(self):
         s: socket.socket
+
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         s.connect((self.serverAddr, int(self.serverPort)))
@@ -90,6 +102,7 @@ class NodeClient:
         msg, _ = s.recvfrom(1024)
 
         print(f"Recebi {(msg.decode('utf-8'))}")
+        self.db.addNeighbors(ast.literal_eval(msg.decode('utf-8')))
 
-        threading.Thread(target=self.keepAlive, args=(self, )).start()
+        threading.Thread(target=self.keepAlive, args=()).start()
         self.watchStream()
