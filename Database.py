@@ -81,7 +81,7 @@ class Database:
             if node := self.nodes.get(nodeIp):
                 node.startStreaming(self.port, s)
                 self.port += 1
-                if not self.streamTo.get(nodeIp):
+                if not self.streamTo.get('10.0.0.10'):
                     self.streamTo['10.0.0.10'] = []
                 self.streamTo['10.0.0.10'].append(node)
         finally:
