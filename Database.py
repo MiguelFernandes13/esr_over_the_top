@@ -76,7 +76,7 @@ class Database:
             node: Node
             if node := self.nodes.get(nodeIp):
                 node.startStreaming(session, s)
-                self.streamTo['10.0.0.1'].append(node)
+                self.streamTo['10.0.0.10'].append(node)
         finally:
             self.lock.release()
     

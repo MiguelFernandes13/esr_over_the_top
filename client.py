@@ -2,7 +2,7 @@ import socket
 import sys
 import threading
 from tkinter import *
-from PIL import Image, ImageTk
+#from PIL import Image, ImageTk
 
 from RtpPacket import RtpPacket
 
@@ -52,7 +52,7 @@ def watchStream(endereco: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((endereco, 4000))
 
-    s.sendTo("Watch Stream".encode('utf-8'), (endereco, 4000))
+    s.sendall("Watch Stream".encode('utf-8'))
 
     msg, _ = s.recvfrom(1024)
     stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
