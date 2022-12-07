@@ -120,7 +120,8 @@ def keepAlive(db: Database):
     while True:
         time.sleep(10)
         print("KeepAlive ", db.neighbors)
-        for node in db.neighbors:
+        for ip in db.neighbors:
+            node = db.nodes[ip]
             if node.isActive:
                 try:
                     #criar tantos sockets quantos os vizinhos
@@ -130,13 +131,13 @@ def keepAlive(db: Database):
                     message = f'KEEPALIVE {t} {jumps} {True}'
                     print("Sending: ", message)
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect((node.ip, 5000))
+                    s.connect((ip, 5000))
                     s.sendall(message.encode('utf-8'))
                     s.close()
 
                 except:
                     print("Connection Error no keepalive")
-                    db.disconnectNode(node.ip)
+                    db.disconnectNode(ip)
 
 
 def main():
