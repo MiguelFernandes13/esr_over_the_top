@@ -121,8 +121,8 @@ def keepAlive(db: Database):
         time.sleep(10)
         print("KeepAlive ", db.neighbors)
         for ip in db.neighbors:
-            node = db.nodes[ip]
-            if node.isActive:
+            node = db.getNeighbors(ip)
+            if node.isActive():
                 try:
                     #criar tantos sockets quantos os vizinhos
                     #enviar para cada vizinho um keepalive com tempo atual e numero de saltos

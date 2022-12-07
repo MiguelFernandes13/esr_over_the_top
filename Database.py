@@ -30,6 +30,7 @@ class Node:
     def connect(self): self.isActive = True
     def disconnect(self): self.isActive = False
     
+    def isActive(self): return self.isActive
 
 
 class Database:
