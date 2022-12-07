@@ -135,6 +135,7 @@ def keepAlive(db: Database):
                     s.close()
 
                 except:
+                    print("Connection Error no keepalive")
                     db.disconnectNode(node.ip)
 
 
