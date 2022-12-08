@@ -3,7 +3,6 @@ import sys
 import threading
 import time
 from tkinter import *
-import ast
 from NodeDatabase import NodeDataBase
 #from PIL import Image, ImageTk
 
@@ -114,8 +113,7 @@ class NodeClient:
         msg, _ = s.recvfrom(1024)
 
         print(f"Recebi {(msg.decode('utf-8'))}")
-        list = ast.literal_eval(msg.decode('utf-8'))
-        list = [n.strip() for n in list]
+        list = msg.decode('utf-8').strip('][').replace(' ', '').split(',')
         print(type(list))
         self.db.addNeighbors(list)
 
