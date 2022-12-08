@@ -116,7 +116,8 @@ def sendRtp(db: Database, video: VideoStream):
 #traceback.print_exc(file=sys.stdout)
 #print('-'*60)
 
-def keepAlive(db: Database):
+def keepAlive(db: Database, server_address: str):
+    seq = 0
     while True:
         time.sleep(10)
         for ip in db.neighbors:
@@ -127,7 +128,8 @@ def keepAlive(db: Database):
                     #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
                     t = time.time()
                     jumps = 1
-                    message = f'KEEPALIVE {t} {jumps} {True}'
+                    message = f'KEEPALIVE {server_address} {seq} {t} {jumps} {True}'
+                    seq += 1
                     print("Sending: ", message)
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect((ip, 5000))
@@ -144,6 +146,7 @@ def main():
     config_file = open("configuration.json", "r")
     config_text = config_file.read()
     data = json.loads(config_text)
+    server_address = data['Ip']
 
     video = VideoStream("movie.Mjpeg")
     db = Database()
@@ -156,7 +159,7 @@ def main():
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream, args=(db, )).start()
     threading.Thread(target=sendRtp, args=(db, video)).start()
-    threading.Thread(target=keepAlive, args=(db, )).start()
+    threading.Thread(target=keepAlive, args=(db, server_address)).start()
 
 
 if __name__ == '__main__':

@@ -22,24 +22,32 @@ class NodeClient:
         msg,_ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
         print(f"Mensagem recebida {msg_decode} de {add[0]}:{add[1]}")
-        time_receveid = msg_decode[1]
+        server_address = msg_decode[1]
+        seq = int(msg_decode[2])
+        time_receveid = msg_decode[3]
         print(f"Tempo recebido {time_receveid}")
         time_ = time.time() - float(time_receveid)
-        jump = int(msg_decode[2])
+        jump = int(msg_decode[4])
         print(f"Saltos recebidos {jump}")
-        stream = bool(msg_decode[3])
+        stream = bool(msg_decode[5])
         print(f"Streaming recebido {stream}")
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
         self.db.update(add[0], time_, jump, stream)
+        self.db.addSent(server_address, add[0], seq)
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
-            if i != add[0]:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((i, 5000))
-                message = f'KEEPALIVE {time_} {jump + 1} {self.db.streaming}'
-                s.sendall(message.encode('utf-8'))
+            if i not in self.db.getSent(server_address, seq):
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.connect((i, 5000))
+                    message = f'KEEPALIVE {server_address} {seq} {time_receveid} {jump + 1} {self.db.streaming}'
+                    s.sendall(message.encode('utf-8'))
+                    self.db.addSent(server_address, i, seq)
+                    s.close()
+                except:
+                    print("Connection Error to ", i)
         client.close()
 
     def keepAlive(self):
