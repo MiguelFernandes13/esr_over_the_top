@@ -48,8 +48,8 @@ class NodeClient:
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
-            print(f"Enviando para {i}")
             if i not in self.db.getSent(server_address, seq):
+                print(f"Enviando para {i}")
                 threading.Thread(target=self.send_keepAlive, args=(server_address, (i, 5000), seq, time_receveid, jump)).start()
         client.close()
 
