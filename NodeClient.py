@@ -38,6 +38,7 @@ class NodeClient:
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
+            print(f"Enviando para {i}")
             if i not in self.db.getSent(server_address, seq):
                 try:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
