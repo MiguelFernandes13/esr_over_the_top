@@ -18,6 +18,7 @@ class NodeDataBase:
         self.times = {}
         self.jumps = {}
         self.streams = {}
+        self.alreadySent = {}
         self.lock = threading.Lock()
 
     def addNeighbors(self, list):
