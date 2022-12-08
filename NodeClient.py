@@ -62,49 +62,74 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add)).start()
 
-    #def updateMovie(self, imageFile):
-    #    """Update the image file as video frame in the GUI."""
-    #    photo = ImageTk.PhotoImage(Image.open(imageFile))
-    #    label.configure(image = photo, height=288)
-    #    label.image = photo
-    #
-    #def writeFrame(self, data):
-    #    """Write the received frame to a temp image file. Return the image file."""
-    #    cachename = CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT
-    #    file = open(cachename, "wb")
-    #    file.write(data)
-    #    file.close()
 
-    #    return cachename
+    def start_streaming(self, client: socket, add: tuple, interface: str):
+        message, _ = client.recvfrom(1024)
+        message = message.decode('utf-8') #recebe o ip e a porta do cliente que quer ver o stream
+        message = message.split('$')
+        ip = message[0]
+        port = int(message[1])
+        
+        print(f"Recebi {message} de {add[0]}:{add[1]}")
+        if not self.db.streaming:
+            #estabelecer uma rota desde o servidor ate ao nodo
+            best = self.db.bestNeighbor()
+            socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            socket.connect((best, 5001))
+            message = f'{interface}${5002}'
+            socket.sendall(message.encode('utf-8'))
+            socket.close()
 
-    def getStream(self, stream_socket: socket):
-        frameNbr = 0
-        while True:
-            data = stream_socket.recv(20480)
-            if data:
-                rtpPacket = RtpPacket()
-                rtpPacket.decode(data)
-
-                currFrameNbr = rtpPacket.seqNum()
-                print("Current Seq Num: " + str(currFrameNbr))
-
-                if currFrameNbr > frameNbr:  # Discard the late packet
-                    frameNbr = currFrameNbr
-                    print("Frame number: " + str(frameNbr))
-                    #updateMovie(writeFrame(rtpPacket.getPayload()))
-
-    def watchStream(self):
+    def waitToStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.serverAddr, 4000))
+        s.bind((interface, 5001))
+        s.listen(5)
+        while True:
+            client, add = s.accept()
+            threading.Thread(target=self.start_streaming,
+                             args=(client, add, interface)).start()
 
-        #s.sendall("Watch Stream".encode('utf-8'))
+    def send_stream(self, address: tuple, message: bytes):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        socket.sendto(message, address)
+        s.close()
 
-        msg, _ = s.recvfrom(1024)
-        stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        print(msg.decode('utf-8'))
-        stream_socket.bind((self.clientAddr, int(msg.decode('utf-8'))))
+    def resend_stream(self, interface: str):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.bind((interface, 5002))
+        while True:
+            message,_ = s.recvfrom(20480)
+            for i in self.db.getSendTo():
+                threading.Thread(target=self.send_stream, args=(i, message)).start()
 
-        threading.Thread(target=self.getStream, args=(stream_socket, )).start()
+    #def getStream(self, stream_socket: socket):
+    #    frameNbr = 0
+    #    while True:
+    #        data = stream_socket.recv(20480)
+    #        if data:
+    #            rtpPacket = RtpPacket()
+    #            rtpPacket.decode(data)
+    #
+    #            currFrameNbr = rtpPacket.seqNum()
+    #            print("Current Seq Num: " + str(currFrameNbr))
+    #
+    #            if currFrameNbr > frameNbr:  # Discard the late packet
+    #                frameNbr = currFrameNbr
+    #                print("Frame number: " + str(frameNbr))
+    #                #updateMovie(writeFrame(rtpPacket.getPayload()))
+    #
+    #def watchStream(self):
+    #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #    s.connect((self.serverAddr, 4000))
+    #
+    #    #s.sendall("Watch Stream".encode('utf-8'))
+    #
+    #    msg, _ = s.recvfrom(1024)
+    #    stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #    print(msg.decode('utf-8'))
+    #    stream_socket.bind((self.clientAddr, int(msg.decode('utf-8'))))
+    #
+    #    threading.Thread(target=self.getStream, args=(stream_socket, )).start()
 
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)

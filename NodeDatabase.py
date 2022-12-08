@@ -9,6 +9,7 @@ class NodeDataBase:
     jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
     alreadySent : dict # {serverAddress : {seq : [lista visitados] }
+    sendTo : list # [ip]
     lock : threading.Lock
 
     def __init__(self):
@@ -68,3 +69,35 @@ class NodeDataBase:
 
     def getSent(self, serverAdd, seq) -> list:
         return self.alreadySent[serverAdd][seq]
+
+    def addSendTo(self, ip):
+        try:
+            self.lock.acquire()
+            self.sendTo.append(ip)
+        finally:
+            self.lock.release()
+
+    def getSendTo(self) -> list:
+        return self.sendTo
+        
+    def bestNeighbor(self) -> str:
+        bestNeighbor = None
+        neighborStreaming = []
+        for neighbor in self.neighbors:
+            if self.streams[neighbor]:
+                neighborStreaming.append(neighbor)
+        if len(neighborStreaming) != 0:
+            time = float.MAX_VALUE
+            for neighbor in neighborStreaming:
+                for server in self.times[neighbor].keys():
+                    if self.times[neighbor][server] < time:
+                        time = self.times[neighbor][server]
+                        bestNeighbor = neighbor
+        else:
+            time = float.MAX_VALUE
+            for neighbor in self.neighbors:
+                for server in self.times[neighbor].keys():
+                    if self.times[neighbor][server] < time:
+                        time = self.times[neighbor][server]
+                        bestNeighbor = neighbor
+        return bestNeighbor
