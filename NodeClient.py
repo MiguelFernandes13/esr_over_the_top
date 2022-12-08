@@ -128,7 +128,7 @@ class NodeClient:
         interfaces = msg_split[1]
         self.db.addInterfaces(self.stringToList(interfaces))
 
-        for i in self.db.getInterfaces:
+        for i in self.db.getInterfaces():
             threading.Thread(target=self.keepAlive, args=(i, )).start()
 
         #self.watchStream()
