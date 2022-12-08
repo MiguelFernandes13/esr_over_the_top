@@ -116,7 +116,7 @@ class NodeClient:
         print(f"Recebi {(msg.decode('utf-8'))}")
         list = ast.literal_eval(eval(msg.decode))
         print(type(list))
-        self.db.addNeighbors(ast.literal_eval(msg.decode('utf-8')))
+        self.db.addNeighbors(list)
 
         threading.Thread(target=self.keepAlive).start()
         self.watchStream()
