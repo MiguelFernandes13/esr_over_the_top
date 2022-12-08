@@ -113,8 +113,9 @@ class NodeClient:
         msg, _ = s.recvfrom(1024)
 
         print(f"Recebi {(msg.decode('utf-8'))}")
-        list = msg.decode('utf-8').strip('][').replace('"',"").replace(' ', '').split(',')
+        list = msg.decode('utf-8').strip('][').replace(' ', '').split(',')
         print(type(list))
+        print(list)
         self.db.addNeighbors(list)
 
         threading.Thread(target=self.keepAlive).start()
