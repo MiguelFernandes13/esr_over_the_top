@@ -35,3 +35,6 @@ class NodeDataBase:
             self.streams[ip] = stream
         finally:
             self.lock.release()
+
+    def getNeighbors(self):
+        return self.neighbors
