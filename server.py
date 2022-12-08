@@ -11,16 +11,10 @@ from Database import Database
 import json
 
 
-def processamento(db: Database, add: tuple, client: socket):
+def send_neighbors(db: Database, add: tuple, client: socket):
     db.connectNode(add[0])
-    client.send(str(db.getNeighbors(add[0])).encode('utf-8'))
-    #while True:
-    #    data = client.recv(2048)
-    #    message = data.decode('utf-8')
-    #    if message == 'BYE':
-    #        break
-    #    reply = f'Server: {message}'
-    #    client.sendall(str.encode(reply))
+    message = str(db.getNeighbors(add[0])) + "$" + str(db.getInternalInterfaces(add[0]))
+    client.send(message.encode('utf-8'))
     client.close()
 
 
@@ -51,7 +45,7 @@ def join_network(db: Database):
 
     while True:
         client, add = s.accept()
-        threading.Thread(target=processamento, args=(db, add, client)).start()
+        threading.Thread(target=send_neighbors, args=(db, add, client)).start()
 
 
 def join_stream(db: Database):
@@ -152,7 +146,7 @@ def main():
     db = Database()
 
     for i in data['Nodes']:
-        db.addNode(i['Ip'], i['Interfaces'], i['Neighbors'])
+        db.addNode(i['Ip'], i['InternalInterfaces'], i['ExternalInterfaces'] , i['Neighbors'])
 
     db.addNeighbors(data['Neighbors']) 
 

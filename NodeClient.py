@@ -11,12 +11,12 @@ from RtpPacket import RtpPacket
 
 
 class NodeClient:
+    serverAddr: str
+    db: NodeDataBase
 
-    def __init__(self, serveraddr, serverport, clientaddr):
+    def __init__(self, serveraddr):
         self.serverAddr = serveraddr
-        self.serverPort = serverport
-        self.clientAddr = clientaddr
-        self.db = NodeDataBase(clientaddr)
+        self.db = NodeDataBase()
 
     def send_keepAlive(self, server_address : str,add : tuple, seq : int, time : float, jump : int):
         try:
@@ -53,9 +53,9 @@ class NodeClient:
                 threading.Thread(target=self.send_keepAlive, args=(server_address, (i, 5000), seq, time_receveid, jump)).start()
         client.close()
 
-    def keepAlive(self):
+    def keepAlive(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.clientAddr, 5000))
+        s.bind((interface, 5000))
         s.listen(5)
         while True:
             client, add = s.accept()
@@ -106,21 +106,29 @@ class NodeClient:
 
         threading.Thread(target=self.getStream, args=(stream_socket, )).start()
 
+    def stringToList(self, string) -> list:
+        list = ast.literal_eval(string)
+        list = [n.strip() for n in list]
+        return list
+
+
     def main(self):
         s: socket.socket
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        s.connect((self.serverAddr, int(self.serverPort)))
+        s.connect((self.serverAddr, 3000))
 
         msg, _ = s.recvfrom(1024)
+        msg_decode = msg.decode('utf-8')
+        print(f"Recebi {msg_decode}")
+        msg_split = msg_decode.split('$')
+        neighbors = msg_split[0]
+        self.db.addNeighbors(self.stringToList(neighbors))
+        interfaces = msg_split[1]
+        self.db.addInterfaces(self.stringToList(interfaces))
 
-        print(f"Recebi {(msg.decode('utf-8'))}")
-        list = ast.literal_eval(msg.decode('utf-8'))
-        list = [n.strip() for n in list]
-        for i in list:
-            print("Element of list ", i)
-        self.db.addNeighbors(list)
+        for i in self.db.getInterfaces:
+            threading.Thread(target=self.keepAlive, args=(i, )).start()
 
-        threading.Thread(target=self.keepAlive).start()
-        self.watchStream()
+        #self.watchStream()

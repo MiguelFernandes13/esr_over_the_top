@@ -2,7 +2,7 @@ import threading
 
 
 class NodeDataBase:
-    ip : str
+    interfaces : list
     streaming : bool
     neighbors : list
     times : dict # { 'ip' : { serverAddress : time }  }
@@ -11,8 +11,8 @@ class NodeDataBase:
     alreadySent : dict # {serverAddress : {seq : [lista visitados] }
     lock : threading.Lock
 
-    def __init__(self, ip):
-        self.ip = ip
+    def __init__(self):
+        self.interfaces = []
         self.streaming = False
         self.neighbors =  []
         self.times = {}
@@ -25,6 +25,13 @@ class NodeDataBase:
         try:
             self.lock.acquire()
             self.neighbors.extend(list)
+        finally:
+            self.lock.release()
+
+    def addInterfaces(self, interface : list):
+        try:
+            self.lock.acquire()
+            self.interfaces.extend(interface)
         finally:
             self.lock.release()
         
@@ -44,6 +51,9 @@ class NodeDataBase:
 
     def getNeighbors(self) -> list:
         return self.neighbors
+
+    def getInterfaces(self) -> list:
+        return self.interfaces
 
     def addSent(self, serverAdd, ip, seq):
         try:

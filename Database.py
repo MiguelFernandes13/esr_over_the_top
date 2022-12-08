@@ -4,7 +4,8 @@ import socket
 
 class Node:
     ip: str # binario
-    interfaces: list
+    internalInterfaces: list
+    externalInterfaces: list
     neighbors: list # Node
     isActive: bool
     isStreaming: bool
@@ -12,9 +13,10 @@ class Node:
     port : int
     rtpSocket : socket
 
-    def __init__(self, ip, interfaces, neighbors) -> None:
+    def __init__(self, ip, internalInterfaces, externalInterfaces, neighbors) -> None:
         self.ip = ip
-        self.interfaces = interfaces
+        self.internalInterfaces = internalInterfaces
+        self.externalInterfaces = externalInterfaces
         self.neighbors = neighbors
         self.isActive = False
         self.isStreaming = False
@@ -110,12 +112,21 @@ class Database:
             self.lock.release()
 
     
-    def getNeighbors(self, nodeIp):
+    def getNeighbors(self, nodeIp) -> list:
         try:
             self.lock.acquire()
             node: Node
             if node := self.nodes.get(nodeIp):
                 return node.neighbors
+        finally:
+            self.lock.release()
+        
+    def getInternalInterfaces(self, nodeIp) -> list:
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                return node.internalInterfaces
         finally:
             self.lock.release()
 
