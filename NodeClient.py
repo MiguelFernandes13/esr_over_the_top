@@ -20,8 +20,8 @@ class NodeClient:
 
     def fload_keepAlive(self, client: socket, add: tuple):
         msg,_ = client.recvfrom(1024)
-        print(f"Mensagem recebida {msg} de {add[0]}:{add[1]}")
-        msg_decode = msg.decode('utf-8')
+        msg_decode = msg.decode('utf-8').split(' ')
+        print(f"Mensagem recebida {msg_decode} de {add[0]}:{add[1]}")
         time_receveid = msg_decode[1]
         print(f"Tempo recebido {time_receveid}")
         time_ = time.time() - float(time_receveid)
