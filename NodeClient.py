@@ -33,7 +33,7 @@ class NodeClient:
         print(f"Streaming recebido {stream}")
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
-        self.db.update(add[0], time_, jump, stream)
+        self.db.update(server_address, add[0], time_, jump, stream)
         self.db.addSent(server_address, add[0], seq)
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
