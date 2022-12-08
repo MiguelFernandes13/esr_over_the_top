@@ -18,6 +18,17 @@ class NodeClient:
         self.clientAddr = clientaddr
         self.db = NodeDataBase(clientaddr)
 
+    def send_keepAlive(self, server_address : str,add : tuple, seq : int, time : float, jump : int):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(add)
+            message = f'KEEPALIVE {server_address} {seq} {time} {jump + 1} {self.db.streaming}'
+            s.sendall(message.encode('utf-8'))
+            self.db.addSent(server_address, add[0], seq)
+            s.close()
+        except:
+            print("Connection Error to ", add[0], ":", add[1])
+
     def fload_keepAlive(self, client: socket, add: tuple):
         msg,_ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
@@ -25,12 +36,9 @@ class NodeClient:
         server_address = msg_decode[1]
         seq = int(msg_decode[2])
         time_receveid = msg_decode[3]
-        print(f"Tempo recebido {time_receveid}")
         time_ = time.time() - float(time_receveid)
         jump = int(msg_decode[4])
-        print(f"Saltos recebidos {jump}")
         stream = bool(msg_decode[5])
-        print(f"Streaming recebido {stream}")
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
         self.db.update(server_address, add[0], time_, jump, stream)
@@ -42,15 +50,7 @@ class NodeClient:
         for i in self.db.getNeighbors():
             print(f"Enviando para {i}")
             if i not in self.db.getSent(server_address, seq):
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect((i, 5000))
-                    message = f'KEEPALIVE {server_address} {seq} {time_receveid} {jump + 1} {self.db.streaming}'
-                    s.sendall(message.encode('utf-8'))
-                    self.db.addSent(server_address, i, seq)
-                    s.close()
-                except:
-                    print("Connection Error to ", i)
+                threading.Thread(target=self.send_keepAlive, args=(server_address, (i, 5000), seq, time_receveid, jump)).start()
         client.close()
 
     def keepAlive(self):
