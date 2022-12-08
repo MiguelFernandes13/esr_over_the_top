@@ -8,7 +8,7 @@ class NodeDataBase:
     times : dict # { 'ip' : { serverAddress : time }  }
     jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
-    alreadySent : dict # { 'ip' : { seq : ip } }
+    alreadySent : dict # {serverAddress : {seq : {lista visitados}}
     lock : threading.Lock
 
     def __init__(self, ip):
@@ -31,12 +31,12 @@ class NodeDataBase:
     def update(self, serverAddress,ip, time, jumps, stream):
         try:
             self.lock.acquire()
-            if serverAddress not in self.times:
-                self.times[serverAddress] = {}
-                self.jumps[serverAddress] = {}
+            if ip not in self.times.keys():
+                self.times[ip] = {}
+                self.jumps[ip] = {}
 
-            self.times[serverAddress][ip] = time
-            self.jumps[serverAddress][ip] = jumps
+            self.times[ip][serverAddress] = time
+            self.jumps[ip][serverAddress] = jumps
             self.streams[ip] = stream
         finally:
             self.lock.release()
@@ -47,7 +47,7 @@ class NodeDataBase:
     def addSent(self, serverAdd, ip, seq):
         try:
             self.lock.acquire()
-            if serverAdd not in self.alreadySent:
+            if serverAdd not in self.alreadySent.keys():
                 self.alreadySent[serverAdd] = {}
             self.alreadySent[serverAdd][seq] = ip
         finally:
