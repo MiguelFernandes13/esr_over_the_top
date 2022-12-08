@@ -8,7 +8,7 @@ class NodeDataBase:
     times : dict # { 'ip' : { serverAddress : time }  }
     jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
-    alreadySent : dict # {serverAddress : {seq : {lista visitados}}
+    alreadySent : dict # {serverAddress : {seq : [lista visitados] }
     lock : threading.Lock
 
     def __init__(self, ip):
@@ -42,7 +42,7 @@ class NodeDataBase:
         finally:
             self.lock.release()
 
-    def getNeighbors(self):
+    def getNeighbors(self) -> list:
         return self.neighbors
 
     def addSent(self, serverAdd, ip, seq):
@@ -50,9 +50,11 @@ class NodeDataBase:
             self.lock.acquire()
             if serverAdd not in self.alreadySent.keys():
                 self.alreadySent[serverAdd] = {}
-            self.alreadySent[serverAdd][seq] = ip
+            if seq not in self.alreadySent[serverAdd].keys():
+                self.alreadySent[serverAdd][seq] = []
+            self.alreadySent[serverAdd][seq].append(ip)
         finally:
             self.lock.release()
 
-    def getSent(self, serverAdd, seq):
+    def getSent(self, serverAdd, seq) -> list:
         return self.alreadySent[serverAdd][seq]
