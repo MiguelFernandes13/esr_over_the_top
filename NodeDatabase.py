@@ -24,7 +24,7 @@ class NodeDataBase:
     def addNeighbors(self, list : list):
         try:
             self.lock.acquire()
-            self.neighbors.append(list)
+            self.neighbors.extend(list)
         finally:
             self.lock.release()
         
