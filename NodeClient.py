@@ -114,7 +114,7 @@ class NodeClient:
         msg, _ = s.recvfrom(1024)
 
         print(f"Recebi {(msg.decode('utf-8'))}")
-        list = ast.literal_eval(eval(msg.decode))
+        list = ast.literal_eval(msg.decode)
         print(type(list))
         self.db.addNeighbors(list)
 
