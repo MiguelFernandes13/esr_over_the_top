@@ -65,10 +65,10 @@ class Database:
             self.lock.release()
 
 
-    def addNode(self, ip, interfaces, neighbors):
+    def addNode(self, ip, internalInterfaces, externalInterfaces, neighbors):
         try:
             self.lock.acquire()
-            self.nodes[ip] = Node(ip, interfaces, neighbors)
+            self.nodes[ip] = Node(ip, internalInterfaces, externalInterfaces, neighbors)
         finally:
             self.lock.release()
 
