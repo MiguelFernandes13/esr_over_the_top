@@ -34,7 +34,7 @@ class NodeClient:
         self.db.update(add[0], time_, jump, stream)
         #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         #enviar tambem se o nodo esta a fazer streaming
-        for i in self.db.neighbords:
+        for i in self.db.getNeighbors():
             if i != add[0]:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((i, 5000))
