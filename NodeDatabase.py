@@ -2,36 +2,102 @@ import threading
 
 
 class NodeDataBase:
-    ip : str
+    interfaces : list
     streaming : bool
     neighbors : list
-    times : dict # { 'ip' : time }
-    jumps : dict # { 'ip' : jumps }
+    times : dict # { 'ip' : { serverAddress : time }  }
+    jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
+    alreadySent : dict # {serverAddress : {seq : [lista visitados] }
+    sendTo : list # [(ip, port)]
     lock : threading.Lock
 
-    def __init__(self, ip):
-        self.ip = ip
+    def __init__(self):
+        self.interfaces = []
         self.streaming = False
         self.neighbors =  []
         self.times = {}
         self.jumps = {}
         self.streams = {}
+        self.alreadySent = {}
         self.lock = threading.Lock()
 
-    def addNeighbors(self, list):
+    def addNeighbors(self, list : list):
         try:
             self.lock.acquire()
-            self.neighbors.append(list)
+            self.neighbors.extend(list)
+        finally:
+            self.lock.release()
+
+    def addInterfaces(self, interface : list):
+        try:
+            self.lock.acquire()
+            self.interfaces.extend(interface)
         finally:
             self.lock.release()
         
 
-    def update(self, ip, time, jumps, stream):
+    def update(self, serverAddress,ip, time, jumps, stream):
         try:
             self.lock.acquire()
-            self.times[ip] = time
-            self.jumps[ip] = jumps
+            if ip not in self.times.keys():
+                self.times[ip] = {}
+                self.jumps[ip] = {}
+
+            self.times[ip][serverAddress] = time
+            self.jumps[ip][serverAddress] = jumps
             self.streams[ip] = stream
         finally:
             self.lock.release()
+
+    def getNeighbors(self) -> list:
+        return self.neighbors
+
+    def getInterfaces(self) -> list:
+        return self.interfaces
+
+    def addSent(self, serverAdd, ip, seq):
+        try:
+            self.lock.acquire()
+            if serverAdd not in self.alreadySent.keys():
+                self.alreadySent[serverAdd] = {}
+            if seq not in self.alreadySent[serverAdd].keys():
+                self.alreadySent[serverAdd][seq] = []
+            self.alreadySent[serverAdd][seq].append(ip)
+        finally:
+            self.lock.release()
+
+    def getSent(self, serverAdd, seq) -> list:
+        return self.alreadySent[serverAdd][seq]
+
+    def addSendTo(self, ip, port):
+        try:
+            self.lock.acquire()
+            self.sendTo.append((ip, port))
+        finally:
+            self.lock.release()
+
+    def getSendTo(self) -> list:
+        return self.sendTo
+        
+    def bestNeighbor(self) -> str:
+        bestNeighbor = None
+        neighborStreaming = []
+        for neighbor in self.neighbors:
+            if self.streams[neighbor]:
+                neighborStreaming.append(neighbor)
+        if len(neighborStreaming) != 0:
+            time = float.MAX_VALUE
+            for neighbor in neighborStreaming:
+                for server in self.times[neighbor].keys():
+                    if self.times[neighbor][server] < time:
+                        time = self.times[neighbor][server]
+                        bestNeighbor = neighbor
+        else:
+            time = float.MAX_VALUE
+            for neighbor in self.neighbors:
+                for server in self.times[neighbor].keys():
+                    if self.times[neighbor][server] < time:
+                        time = self.times[neighbor][server]
+                        bestNeighbor = neighbor
+        return bestNeighbor

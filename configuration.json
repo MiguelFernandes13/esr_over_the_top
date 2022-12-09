@@ -4,17 +4,20 @@
   "Nodes": [
     {
       "Ip": "10.0.0.1",
-      "Interfaces": [],
+      "InternalInterfaces": [ "10.0.0.1", "10.0.1.1", "10.0.1.2"],
+      "ExternalInterfaces": [],
       "Neighbors": [ "10.0.0.10", "10.0.1.2", "10.0.2.2" ]
     },
     {
       "Ip": "10.0.1.2",
-      "Interfaces": [ "10.0.4.0/24" ],
-      "Neighbors": [ "10.0.1.1", "10.0.5.2" ]
+      "InternalInterfaces": [ "10.0.1.2", "10.0.5.1"],
+      "ExternalInterfaces": [ "10.0.4.0/24" ],
+      "Neighbors": ["10.0.1.1", "10.0.5.2"]
     },
     {
       "Ip": "10.0.2.2",
-      "Interfaces": [ "10.0.3.0/24" ],
+      "InternalInterfaces": [ "10.0.2.2", "10.0.5.2"],
+      "ExternalInterfaces": [ "10.0.3.0/24" ],
       "Neighbors": [ "10.0.2.1", "10.0.5.1" ]
     }
   ]
