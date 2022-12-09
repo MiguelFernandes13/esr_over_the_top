@@ -131,7 +131,7 @@ class ClientGUI:
             print('\nBind \n')
         except:
             messagebox.showwarning('Unable to Bind',
-                                   'Unable to bind PORT=%d' % self.rtpPort)
+                                   'Unable to bind PORT=%d' % self.clientPort)
 
     def handler(self):
         """Handler on explicitly closing the GUI window."""
