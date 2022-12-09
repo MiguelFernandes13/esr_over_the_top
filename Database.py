@@ -109,7 +109,7 @@ class Database:
             self.lock.release()
 
     def getStreamToList(self) -> list:
-        return self.streamTod
+        return self.streamTo
     
     def getNeighbors(self, nodeIp) -> list:
         try:

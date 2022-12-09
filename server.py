@@ -38,10 +38,12 @@ def join_network(db: Database):
         client, add = s.accept()
         threading.Thread(target=send_neighbors, args=(db, add, client)).start()
 
-def streaming(add: tuple, s: socket, db: Database):
+def streaming(s: socket, db: Database):
     message = s.recv(1024).decode('utf-8')
+    ip = message.split('$')[0]
+    port = int(message.split('$')[1])
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    db.joinStream(add[0], rtpSocket)
+    db.joinStream(ip, rtpSocket)
     #s.send(str(db.nodes[add[0]].port).encode('utf-8'))
     #print("Stream To: ", db.streamTo['10.0.0.10'][0].port)
 
@@ -60,7 +62,7 @@ def join_stream_node(db: Database):
     while True:
         client, add = s.accept()
         print(f"Conectado a {add[0]}:{add[1]}")
-        threading.Thread(target=streaming, args=(add, client, db)).start()
+        threading.Thread(target=streaming, args=(client, db)).start()
 
 def streaming_client(db: Database, add: tuple, client: socket):
     message = client.recv(1024).decode('utf-8')
