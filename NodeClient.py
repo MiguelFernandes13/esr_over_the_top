@@ -76,11 +76,11 @@ class NodeClient:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
             print(f"O melhor vizinho e {best}")
-            socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            socket.connect((best, 5001))
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((best, 5001))
             message = f'{interface}${5002}'
-            socket.sendall(message.encode('utf-8'))
-            socket.close()
+            s.sendall(message.encode('utf-8'))
+            s.close()
             self.db.streaming = True
 
     def waitToStream(self, interface: str):
