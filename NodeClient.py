@@ -75,7 +75,7 @@ class NodeClient:
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
-            entryInterface = self.db.getInterface(best)
+            entryInterface = self.db.getIpToInterface(best)
             print(f"O melhor vizinho e {best}")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((best, 5001))
