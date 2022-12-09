@@ -1,3 +1,4 @@
+import sys
 import threading
 
 
@@ -88,14 +89,14 @@ class NodeDataBase:
             if self.streams.get(neighbor):
                 neighborStreaming.append(neighbor)
         if len(neighborStreaming) != 0:
-            time = float.MAX_VALUE
+            time = sys.float_info.max
             for neighbor in neighborStreaming:
                 for server in self.times[neighbor].keys():
                     if self.times[neighbor][server] < time:
                         time = self.times[neighbor][server]
                         bestNeighbor = neighbor
         else:
-            time = float.MAX_VALUE
+            time = sys.float_info.max
             for neighbor in self.neighbors:
                 if self.times.get(neighbor):
                     for server in self.times.get(neighbor).keys():
