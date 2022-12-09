@@ -175,6 +175,7 @@ def main():
 
     threading.Thread(target=join_network, args=(db, )).start()
     threading.Thread(target=join_stream_node, args=(db, )).start()
+    threading.Thread(target=join_stream_client, args=(db, )).start()
     threading.Thread(target=sendRtp, args=(db, video)).start()
     threading.Thread(target=keepAlive, args=(db, server_address)).start()
 
