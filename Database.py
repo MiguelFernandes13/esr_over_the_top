@@ -141,12 +141,8 @@ class Database:
             for external in node.externalInterfaces:
                 nodeBin = self.toBin(external)
                 conta = 0
-                print("len nodeBin: ", len(nodeBin))
-                for i in range(len(nodeBin)):
+                for i in range(24):
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                    print("conta: ", conta)
-                    print("nodeBin[i]: ", nodeBin[i])
-                    print("binIp[i]: ", binIp[i])
                     if int(binIp[i]) == int(nodeBin[i]): conta += 1
                     else:
                         if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
