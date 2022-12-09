@@ -129,7 +129,9 @@ class Database:
         finally:
             self.lock.release()
 
-    def toBin(self, ip): return ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
+    def toBin(self, ip): 
+        ipSplited = ip.split('/')
+        return ''.join([bin(int(x)+256)[3:] for x in ipSplited[0].split('.')])
 
     def getStreamTo(self, clientIp) -> str:
         binIp = self.toBin(clientIp)
