@@ -95,7 +95,7 @@ class NodeClient:
 
     def send_stream(self, address: tuple, message: bytes):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        socket.sendto(message, address)
+        s.sendto(message, address)
         s.close()
 
     def resend_stream(self, interface: str):
