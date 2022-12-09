@@ -118,7 +118,7 @@ def sendRtp(db: Database, video: VideoStream):
     """Send RTP packets over UDP."""
     while True:
         #self.clientInfo['event'].wait(0.05)
-        time.sleep(1)
+        time.sleep(0.05)
 
         data = video.next_frame()
         if data:
@@ -141,7 +141,7 @@ def sendRtp(db: Database, video: VideoStream):
 def keepAlive(db: Database, server_address: str):
     seq = 0
     while True:
-        time.sleep(10)
+        time.sleep(3)
         for ip in db.neighbors:
             node = db.getNode(ip)
             if node.active():
