@@ -40,6 +40,7 @@ def join_network(db: Database):
 
 def streaming(s: socket, db: Database):
     message = s.recv(1024).decode('utf-8')
+    print("Message: ", message)
     ip = message.split('$')[0]
     port = int(message.split('$')[1])
     rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
