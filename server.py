@@ -69,7 +69,7 @@ def streaming_client(db: Database, add: tuple, client: socket):
     nodeIp = db.getStreamTo(add[0])
     socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socket.connect((nodeIp, 5001))
-    client_info = (add[0], port).encode('utf-8')
+    client_info = f"{add[0]}${port}".encode('utf-8')
     socket.send(client_info)
     socket.close()
     

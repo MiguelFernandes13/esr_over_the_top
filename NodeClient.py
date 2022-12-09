@@ -75,6 +75,7 @@ class NodeClient:
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
+            print(f"O melhor vizinho e {best}")
             socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             socket.connect((best, 5001))
             message = f'{interface}${5002}'
@@ -102,36 +103,8 @@ class NodeClient:
         while True:
             message,_ = s.recvfrom(20480)
             for i in self.db.getSendTo():
+                print(f"Enviando stream para {i}")
                 threading.Thread(target=self.send_stream, args=(i, message)).start()
-
-    #def getStream(self, stream_socket: socket):
-    #    frameNbr = 0
-    #    while True:
-    #        data = stream_socket.recv(20480)
-    #        if data:
-    #            rtpPacket = RtpPacket()
-    #            rtpPacket.decode(data)
-    #
-    #            currFrameNbr = rtpPacket.seqNum()
-    #            print("Current Seq Num: " + str(currFrameNbr))
-    #
-    #            if currFrameNbr > frameNbr:  # Discard the late packet
-    #                frameNbr = currFrameNbr
-    #                print("Frame number: " + str(frameNbr))
-    #                #updateMovie(writeFrame(rtpPacket.getPayload()))
-    #
-    #def watchStream(self):
-    #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #    s.connect((self.serverAddr, 4000))
-    #
-    #    #s.sendall("Watch Stream".encode('utf-8'))
-    #
-    #    msg, _ = s.recvfrom(1024)
-    #    stream_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #    print(msg.decode('utf-8'))
-    #    stream_socket.bind((self.clientAddr, int(msg.decode('utf-8'))))
-    #
-    #    threading.Thread(target=self.getStream, args=(stream_socket, )).start()
 
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)
@@ -157,5 +130,6 @@ class NodeClient:
 
         for i in self.db.getInterfaces():
             threading.Thread(target=self.keepAlive, args=(i, )).start()
+            threading.Thread(target=self.waitToStream, args=(i, )).start()
 
         #self.watchStream()
