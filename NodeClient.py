@@ -29,7 +29,7 @@ class NodeClient:
         except:
             print("Connection Error to ", add[0], ":", add[1])
 
-    def fload_keepAlive(self, client: socket, add: tuple):
+    def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg,_ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
         print(f"Mensagem recebida {msg_decode} de {add[0]}:{add[1]}")
@@ -41,7 +41,7 @@ class NodeClient:
         stream = bool(msg_decode[5])
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
-        self.db.update(server_address, add[0], time_, jump, stream)
+        self.db.update(server_address, add[0], time_, jump, stream, interface)
         print("Tempos de vida ", self.db.times)
         print("Saltos ", self.db.jumps)
         self.db.addSent(server_address, add[0], seq)
@@ -60,7 +60,7 @@ class NodeClient:
         while True:
             client, add = s.accept()
             threading.Thread(target=self.fload_keepAlive,
-                             args=(client, add)).start()
+                             args=(client, add, interface)).start()
 
 
     def start_streaming(self, client: socket, add: tuple, interface: str):
@@ -75,10 +75,11 @@ class NodeClient:
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
+            entryInterface = self.db.getInterface(best)
             print(f"O melhor vizinho e {best}")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((best, 5001))
-            message = f'{interface}${5002}'
+            message = f'{entryInterface}${5002}'
             s.sendall(message.encode('utf-8'))
             s.close()
             self.db.streaming = True

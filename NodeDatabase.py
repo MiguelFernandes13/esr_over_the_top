@@ -6,7 +6,8 @@ class NodeDataBase:
     interfaces : list
     streaming : bool
     neighbors : list
-    times : dict # { 'ip' : { serverAddress : time }  }
+    iPToInterface : dict # { 'ip' : interfaces }
+    times : dict # { 'ip', : { serverAddress : time }  }
     jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
     alreadySent : dict # {serverAddress : {seq : [lista visitados] }
@@ -17,6 +18,7 @@ class NodeDataBase:
         self.interfaces = []
         self.streaming = False
         self.neighbors =  []
+        self.interfaces = {}
         self.times = {}
         self.jumps = {}
         self.streams = {}
@@ -39,19 +41,23 @@ class NodeDataBase:
             self.lock.release()
         
 
-    def update(self, serverAddress,ip, time, jumps, stream):
+    def update(self, serverAddress,ip, time, jumps, stream, interface):
         try:
             self.lock.acquire()
             if ip not in self.times.keys():
                 self.times[ip] = {}
                 self.jumps[ip] = {}
 
+            self.interfaces[ip] = interface
             self.times[ip][serverAddress] = time
             self.jumps[ip][serverAddress] = jumps
             self.streams[ip] = stream
         finally:
             self.lock.release()
 
+    def getIpToInterface(self, ip) -> str:
+        return self.iPToInterface[ip]
+    
     def getNeighbors(self) -> list:
         return self.neighbors
 
