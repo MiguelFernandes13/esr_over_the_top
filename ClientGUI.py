@@ -23,6 +23,7 @@ class ClientGUI:
         self.sessionId = 0
         self.playMovie()
         self.frameNbr = 0
+        self.rtpSocket = None
 
     def createWidgets(self):
         """Build GUI."""
