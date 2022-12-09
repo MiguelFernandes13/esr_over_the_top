@@ -1,9 +1,7 @@
-import os
-from re import S
-import socket
-import threading
-from tkinter import E, N, W, Button, Image, Label, messagebox
-from tkinter.tix import IMAGETEXT
+from tkinter import *
+from tkinter import messagebox
+import socket, threading, os
+from PIL import Image, ImageTk
 
 from RtpPacket import RtpPacket
 
@@ -13,27 +11,21 @@ CACHE_FILE_EXT = ".jpg"
 
 class ClientGUI:
 
-    def __init__(self, master, clientaddr, serveraddr):
+    def __init__(self, master, clientaddr, clientport, serveraddr):
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.handler)
         self.createWidgets()
         self.clientAddr = clientaddr
         self.serverAddr = serveraddr
-        self.port = -1
+        self.serverPort = 5002
+        self.clientPort = clientport
         self.rtspSeq = 0
         self.sessionId = 0
-        self.openRtpPort()
         self.playMovie()
         self.frameNbr = 0
 
     def createWidgets(self):
         """Build GUI."""
-        # Create Setup button
-        self.setup = Button(self.master, width=20, padx=3, pady=3)
-        self.setup["text"] = "Setup"
-        self.setup["command"] = self.setupMovie
-        self.setup.grid(row=1, column=0, padx=2, pady=2)
-
         # Create Play button
         self.start = Button(self.master, width=20, padx=3, pady=3)
         self.start["text"] = "Play"
@@ -60,15 +52,12 @@ class ClientGUI:
         s: socket.socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        s.connect((
-            self.serverAddr,  #serverPort
-        ))
+        s.connect((self.serverAddr, 5002))
 
-        msg, _ = s.recvfrom(1024)
+        s.send(str(self.clientPort).encode('utf-8'))
 
-        print(f"Recebi a porta {(msg.decode('utf-8'))}")
-        self.port = int(msg.decode('utf-8'))
-
+        s.close()
+        self.openRtpPort()
         print("Conexão com o servidor estabelecida...")
 
     def exitClient(self):
@@ -76,10 +65,12 @@ class ClientGUI:
         self.master.destroy()  # Close the gui window
         os.remove(CACHE_FILE_NAME + str(self.sessionId) +
                   CACHE_FILE_EXT)  # Delete the cache image from video
+        self.rtpSocket.close()
 
     def playMovie(self):
         """Play button handler."""
         # Create a new thread to listen for RTP packets
+        threading.Thread(target=self.setupMovie).start()
         threading.Thread(target=self.listenRtp).start()
         self.playEvent = threading.Event()
         self.playEvent.clear()
@@ -120,7 +111,7 @@ class ClientGUI:
 
     def updateMovie(self, imageFile):
         """Update the image file as video frame in the GUI."""
-        photo = IMAGETEXT.PhotoImage(Image.open(imageFile))
+        photo = ImageTk.PhotoImage(Image.open(imageFile))
         self.label.configure(image=photo, height=288)
         self.label.image = photo
 
@@ -134,7 +125,7 @@ class ClientGUI:
 
         try:
             # Bind the socket to the address using the RTP port
-            self.rtpSocket.bind((self.clientAddr, self.port))
+            self.rtpSocket.bind((self.clientAddr, int(self.clientPort)))
             print('\nBind \n')
         except:
             messagebox.showwarning('Unable to Bind',
@@ -142,7 +133,6 @@ class ClientGUI:
 
     def handler(self):
         """Handler on explicitly closing the GUI window."""
-        self.pauseMovie()
         if messagebox.askokcancel("Quit?", "Are you sure you want to quit?"):
             self.exitClient()
         else:  # When the user presses cancel, resume playing.
