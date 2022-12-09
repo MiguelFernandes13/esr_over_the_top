@@ -131,5 +131,6 @@ class NodeClient:
         for i in self.db.getInterfaces():
             threading.Thread(target=self.keepAlive, args=(i, )).start()
             threading.Thread(target=self.waitToStream, args=(i, )).start()
+            threading.Thread(target=self.resend_stream, args=(i, )).start()
 
         #self.watchStream()
