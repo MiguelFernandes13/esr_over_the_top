@@ -109,7 +109,7 @@ class Database:
         finally:
             self.lock.release()
 
-    def getStreamTo(self) -> list:
+    def getStreamToList(self) -> list:
         return self.streamTod
     
     def getNeighbors(self, nodeIp) -> list:
@@ -136,6 +136,7 @@ class Database:
         binIp = self.toBin(clientIp)
         selected = ('', 0)
         for nodeBin, nodeIp in self.iptobin:
+            print(nodeBin, nodeIp)
             conta = 0
             for i in range(len(nodeBin)):
                 #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))

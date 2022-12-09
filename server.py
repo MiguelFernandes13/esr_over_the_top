@@ -121,7 +121,7 @@ def sendRtp(db: Database, video: VideoStream):
         if data:
             frameNumber = video.frameNbr()
             try:
-                for i in db.getStreamTo():
+                for i in db.getStreamToList():
                     address = i.ip
                     port = 5002
                     print(f"Sending frame {frameNumber} to {address}:{port}")
