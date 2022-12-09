@@ -123,7 +123,7 @@ class ClientGUI:
         self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Set the timeout value of the socket to 0.5sec
-        self.rtpSocket.settimeout(0.5)
+        #self.rtpSocket.settimeout(0.5)
 
         try:
             # Bind the socket to the address using the RTP port
