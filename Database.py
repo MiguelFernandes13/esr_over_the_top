@@ -139,6 +139,7 @@ class Database:
         for node in self.nodes.values():
             for external in node.externalInterfaces:
                 nodeBin = self.toBin(external)
+                print("nodeBin: ", nodeBin)
                 conta = 0
                 for i in range(len(nodeBin)):
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
