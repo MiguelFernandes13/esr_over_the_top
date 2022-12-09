@@ -18,7 +18,7 @@ class NodeDataBase:
         self.interfaces = []
         self.streaming = False
         self.neighbors =  []
-        self.interfaces = {}
+        self.iPToInterface = {}
         self.times = {}
         self.jumps = {}
         self.streams = {}
