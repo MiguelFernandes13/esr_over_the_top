@@ -21,9 +21,10 @@ class ClientGUI:
         self.clientPort = clientport
         self.rtspSeq = 0
         self.sessionId = 0
+        self.rtpSocket = None
+        self.setupMovie()
         self.playMovie()
         self.frameNbr = 0
-        self.rtpSocket = None
 
     def createWidgets(self):
         """Build GUI."""
