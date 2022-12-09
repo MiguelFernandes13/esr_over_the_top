@@ -88,7 +88,7 @@ def join_stream_client(db: Database):
     while True:
         client, add = s.accept()
         print(f"Conectado a {add[0]}:{add[1]}")
-        threading.Thread(target=streaming_client, args=(add, client, db)).start()
+        threading.Thread(target=streaming_client, args=(db, add, client)).start()
 
 
 def makeRtp(payload, frameNbr):
