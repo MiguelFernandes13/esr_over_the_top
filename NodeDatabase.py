@@ -48,7 +48,7 @@ class NodeDataBase:
                 self.times[ip] = {}
                 self.jumps[ip] = {}
 
-            self.interfaces[ip] = interface
+            self.iPToInterface[ip] = interface
             self.times[ip][serverAddress] = time
             self.jumps[ip][serverAddress] = jumps
             self.streams[ip] = stream
