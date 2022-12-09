@@ -117,7 +117,6 @@ def makeRtp(payload, frameNbr):
 def sendRtp(db: Database, video: VideoStream):
     """Send RTP packets over UDP."""
     while True:
-        #self.clientInfo['event'].wait(0.05)
         time.sleep(0.05)
 
         data = video.next_frame()
