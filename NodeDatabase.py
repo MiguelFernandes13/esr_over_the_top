@@ -85,7 +85,7 @@ class NodeDataBase:
         bestNeighbor = None
         neighborStreaming = []
         for neighbor in self.neighbors:
-            if self.streams[neighbor]:
+            if self.streams.get(neighbor):
                 neighborStreaming.append(neighbor)
         if len(neighborStreaming) != 0:
             time = float.MAX_VALUE
@@ -97,8 +97,9 @@ class NodeDataBase:
         else:
             time = float.MAX_VALUE
             for neighbor in self.neighbors:
-                for server in self.times[neighbor].keys():
-                    if self.times[neighbor][server] < time:
-                        time = self.times[neighbor][server]
-                        bestNeighbor = neighbor
+                if self.times.get(neighbor):
+                    for server in self.times.get(neighbor).keys():
+                        if self.times[neighbor][server] < time:
+                            time = self.times[neighbor][server]
+                            bestNeighbor = neighbor
         return bestNeighbor
