@@ -69,6 +69,7 @@ class NodeClient:
         message = message.split('$')
         ip = message[0]
         port = int(message[1])
+        self.db.addSendTo(ip, port)
         
         print(f"Recebi {message} de {add[0]}:{add[1]}")
         if not self.db.streaming:
@@ -79,6 +80,7 @@ class NodeClient:
             message = f'{interface}${5002}'
             socket.sendall(message.encode('utf-8'))
             socket.close()
+            self.db.streaming = True
 
     def waitToStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

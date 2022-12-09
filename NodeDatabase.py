@@ -9,7 +9,7 @@ class NodeDataBase:
     jumps : dict # { 'ip' : { serverAddress : jumps }
     streams : dict # { 'ip' : stream(on/off) }
     alreadySent : dict # {serverAddress : {seq : [lista visitados] }
-    sendTo : list # [ip]
+    sendTo : list # [(ip, port)]
     lock : threading.Lock
 
     def __init__(self):
@@ -70,10 +70,10 @@ class NodeDataBase:
     def getSent(self, serverAdd, seq) -> list:
         return self.alreadySent[serverAdd][seq]
 
-    def addSendTo(self, ip):
+    def addSendTo(self, ip, port):
         try:
             self.lock.acquire()
-            self.sendTo.append(ip)
+            self.sendTo.append((ip, port))
         finally:
             self.lock.release()
 

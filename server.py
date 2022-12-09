@@ -17,15 +17,6 @@ def send_neighbors(db: Database, add: tuple, client: socket):
     client.send(message.encode('utf-8'))
     client.close()
 
-
-def streaming(add: tuple, s: socket, db: Database):
-    rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # session = randint(4000, 5000)
-    db.joinStream(add[0], rtpSocket)
-    s.send(str(db.nodes[add[0]].port).encode('utf-8'))
-    print("Stream To: ", db.streamTo['10.0.0.10'][0].port)
-
-
 def join_network(db: Database):
     s: socket.socket
     endereco: str
@@ -35,7 +26,7 @@ def join_network(db: Database):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    endereco = '10.0.0.10'
+    endereco = db.ip
     porta = 3000
 
     s.bind((endereco, porta))
@@ -47,24 +38,57 @@ def join_network(db: Database):
         client, add = s.accept()
         threading.Thread(target=send_neighbors, args=(db, add, client)).start()
 
+def streaming(add: tuple, s: socket, db: Database):
+    message = s.recv(1024).decode('utf-8')
+    rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    db.joinStream(add[0], rtpSocket)
+    #s.send(str(db.nodes[add[0]].port).encode('utf-8'))
+    #print("Stream To: ", db.streamTo['10.0.0.10'][0].port)
 
-def join_stream(db: Database):
+
+def join_stream_node(db: Database):
     s: socket.socket
-    endereco: str
     porta: int
     add: tuple
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    endereco = '10.0.0.10'
-    porta = 4000
+    porta = 5001
 
-    s.bind((endereco, porta))
+    s.bind((db.ip, porta))
     s.listen(5)
 
     while True:
         client, add = s.accept()
         print(f"Conectado a {add[0]}:{add[1]}")
         threading.Thread(target=streaming, args=(add, client, db)).start()
+
+def streaming_client(db: Database, add: tuple, client: socket):
+    message = client.recv(1024).decode('utf-8')
+    client.close()
+    port = int(message)
+    nodeIp = db.getStreamTo(add[0])
+    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.connect((nodeIp, 5001))
+    client_info = (add[0], port).encode('utf-8')
+    socket.send(client_info)
+    socket.close()
+    
+
+def join_stream_client(db: Database):
+    s: socket.socket
+    porta: int
+    add: tuple
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    porta = 5002
+
+    s.bind((db.ip, porta))
+    s.listen(5)
+
+    while True:
+        client, add = s.accept()
+        print(f"Conectado a {add[0]}:{add[1]}")
+        threading.Thread(target=streaming_client, args=(add, client, db)).start()
 
 
 def makeRtp(payload, frameNbr):
@@ -96,10 +120,9 @@ def sendRtp(db: Database, video: VideoStream):
         if data:
             frameNumber = video.frameNbr()
             try:
-                for i in db.streamTo.get('10.0.0.10'):
-                    print(i.port, i.ip)
+                for i in db.getStreamTo():
                     address = i.ip
-                    port = int(i.port)
+                    port = 5002
                     print(f"Sending frame {frameNumber} to {address}:{port}")
                     i.rtpSocket.sendto(makeRtp(data, frameNumber),
                                        (address, port))
@@ -143,7 +166,7 @@ def main():
     server_address = data['Ip']
 
     video = VideoStream("movie.Mjpeg")
-    db = Database()
+    db = Database(data['Ip'])
 
     for i in data['Nodes']:
         db.addNode(i['Ip'], i['InternalInterfaces'], i['ExternalInterfaces'] , i['Neighbors'])
@@ -151,7 +174,7 @@ def main():
     db.addNeighbors(data['Neighbors']) 
 
     threading.Thread(target=join_network, args=(db, )).start()
-    threading.Thread(target=join_stream, args=(db, )).start()
+    threading.Thread(target=join_stream_node, args=(db, )).start()
     threading.Thread(target=sendRtp, args=(db, video)).start()
     threading.Thread(target=keepAlive, args=(db, server_address)).start()
 
