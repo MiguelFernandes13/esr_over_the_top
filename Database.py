@@ -147,7 +147,7 @@ class Database:
                     print("conta: ", conta)
                     print("nodeBin[i]: ", nodeBin[i])
                     print("binIp[i]: ", binIp[i])
-                    if int(binIp[i]) & int(nodeBin[i]): conta += 1
+                    if int(binIp[i]) == int(nodeBin[i]): conta += 1
                     else:
                         if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
                         break
