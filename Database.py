@@ -142,6 +142,7 @@ class Database:
                 nodeBin = self.toBin(external)
                 print("nodeBin: ", nodeBin)
                 conta = 0
+                print("len nodeBin: ", len(nodeBin))
                 for i in range(len(nodeBin)):
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
                     if int(binIp[i]) & int(nodeBin[i]): conta += 1
