@@ -39,7 +39,7 @@ class Database:
     lock : threading.Lock
     nodes: dict # { 'ip' : Node}
     neighbors : dict # [ips]
-    iptobin: list # [ ('bin', 'ip') ]
+    #iptobin: list # [ ('bin', 'ip') ]
     streamTo: list # [Node]
     mask = bin(24)
 
@@ -48,7 +48,7 @@ class Database:
         self.lock = threading.Lock()
         self.nodes = {}
         self.neighbors = {}
-        self.iptobin = []
+        #self.iptobin = []
         self.streamTo = []
 
 
@@ -59,7 +59,6 @@ class Database:
                 if not neighbor in self.neighbors:
                     node = self.nodes.get(neighbor)
                     self.neighbors[neighbor] = node
-                    self.iptobin.append((self.toBin(neighbor), neighbor))
         finally:
             self.lock.release()
 
@@ -135,15 +134,16 @@ class Database:
     def getStreamTo(self, clientIp) -> str:
         binIp = self.toBin(clientIp)
         selected = ('', 0)
-        for nodeBin, nodeIp in self.iptobin:
-            print(nodeBin, nodeIp)
-            conta = 0
-            for i in range(len(nodeBin)):
-                #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                if int(binIp[i]) & int(nodeBin[i]): conta += 1
-                else:
-                    if conta > selected[1]: selected = (nodeIp, conta)
-                    break
+        for node in self.nodes.values():
+            for external in node.externalInterfaces:
+                nodeBin = self.toBin(external)
+                conta = 0
+                for i in range(len(nodeBin)):
+                    #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
+                    if int(binIp[i]) & int(nodeBin[i]): conta += 1
+                    else:
+                        if conta > selected[1]: selected = (node.ip, conta)
+                        break
         return selected[0]
 
         
