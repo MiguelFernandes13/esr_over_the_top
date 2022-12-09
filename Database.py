@@ -135,6 +135,7 @@ class Database:
 
     def getStreamTo(self, clientIp) -> str:
         binIp = self.toBin(clientIp)
+        print("binIp: ", binIp)
         selected = ('', 0)
         for node in self.nodes.values():
             for external in node.externalInterfaces:
