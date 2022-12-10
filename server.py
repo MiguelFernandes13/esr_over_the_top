@@ -67,6 +67,8 @@ def join_stream_node(db: Database):
 
 def streaming_client(db: Database, add: tuple, client: socket):
     message = client.recv(1024).decode('utf-8')
+    sessionId = randint(100000, 999999)
+    client.send(str(sessionId).encode('utf-8'))
     client.close()
     port = int(message)
     nodeIp = db.getStreamTo(add[0])

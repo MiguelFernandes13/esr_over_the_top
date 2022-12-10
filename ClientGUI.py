@@ -58,6 +58,8 @@ class ClientGUI:
 
         s.send(str(self.clientPort).encode('utf-8'))
 
+        self.sessionId = int(s.recv(1024).decode('utf-8'))
+
         s.close()
         self.openRtpPort()
         print("Conexão com o servidor estabelecida...")
