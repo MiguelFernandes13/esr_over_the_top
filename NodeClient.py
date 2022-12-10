@@ -75,6 +75,7 @@ class NodeClient:
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
+            self.db.addReceiveFrom(ip)
             entryInterface = self.db.getIpToInterface(best)
             print(f"O melhor vizinho e {best}")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -93,6 +94,25 @@ class NodeClient:
             threading.Thread(target=self.start_streaming,
                              args=(client, add, interface)).start()
 
+    def stop_streaming(self, client: socket):
+        message, _ = client.recvfrom(1024)
+        message = message.decode('utf-8')
+        message = message.split('$')
+        ip = message[0]
+        port = int(message[1])
+        self.db.removeSendTo(ip, port)
+        if len(self.db.getSendTo()) == 0:
+            self.db.streaming = False
+        client.close()
+
+    def waitToStopStream(self, interface: str):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((interface, 5003))
+        s.listen(5)
+        while True:
+            client, add = s.accept()
+            threading.Thread(target=self.stop_streaming,args=(client, add)).start()
+
     def send_stream(self, address: tuple, message: bytes):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.sendto(message, address)
@@ -106,6 +126,11 @@ class NodeClient:
             for i in self.db.getSendTo():
                 print(f"Enviando stream para {i}")
                 threading.Thread(target=self.send_stream, args=(i, message)).start()
+
+    def recalulate_roots(self):
+        while True:
+            time.sleep(10)
+            self.db.recalulateRoots()
 
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)

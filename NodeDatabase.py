@@ -12,6 +12,7 @@ class NodeDataBase:
     streams : dict # { 'ip' : stream(on/off) }
     alreadySent : dict # {serverAddress : {seq : [lista visitados] }
     sendTo : list # [(ip, port)]
+    receiveFrom : str
     lock : threading.Lock
 
     def __init__(self):
@@ -75,6 +76,7 @@ class NodeDataBase:
         finally:
             self.lock.release()
 
+
     def getSent(self, serverAdd, seq) -> list:
         return self.alreadySent[serverAdd][seq]
 
@@ -86,8 +88,24 @@ class NodeDataBase:
         finally:
             self.lock.release()
 
+    def removeSendTo(self, ip, port):
+        try:
+            self.lock.acquire()
+            if (ip, port) in self.sendTo:
+                self.sendTo.remove((ip, port))
+        finally:
+            self.lock.release()
+    
+    def addReceiveFrom(self, ip):
+        try:
+            self.lock.acquire()
+            self.receiveFrom = ip
+        finally:
+            self.lock.release()
+
     def getSendTo(self) -> list:
         return self.sendTo
+
         
     def bestNeighbor(self) -> str:
         bestNeighbor = None
@@ -111,3 +129,16 @@ class NodeDataBase:
                             time = self.times[neighbor][server]
                             bestNeighbor = neighbor
         return bestNeighbor
+
+    def recalulateRoots(self):
+        try:
+            self.lock.acquire()
+            self.sendTo = []
+            self.receiveFrom = []
+            for neighbor in self.neighbors:
+                if self.streams.get(neighbor):
+                    self.addSendTo(neighbor, self.getIpToInterface(neighbor))
+                else:
+                    self.addReceiveFrom(neighbor, self.getIpToInterface(neighbor))
+        finally:
+            self.lock.release()
