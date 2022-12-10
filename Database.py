@@ -146,11 +146,11 @@ class Database:
                 conta = 0
                 for i in range(self.mask):
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                    if (int(binIp[i]) == int(nodeBin[i]) and i < (self.mask - 1) ): conta += 1
-                    else:
-                        print("conta: ", conta)
-                        if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
-                        break
+                    if int(binIp[i]) == int(nodeBin[i]): conta += 1
+                    else: break
+                
+                print("conta: ", conta)
+                if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
         return selected[0]
 
         

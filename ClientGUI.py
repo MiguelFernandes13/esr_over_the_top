@@ -74,10 +74,8 @@ class ClientGUI:
     def playMovie(self):
         """Play button handler."""
         # Create a new thread to listen for RTP packets
-        threading.Thread(target=self.setupMovie).start()
         threading.Thread(target=self.listenRtp).start()
-        self.playEvent = threading.Event()
-        self.playEvent.clear()
+
 
     def listenRtp(self):
         """Listen for RTP packets."""
@@ -96,10 +94,6 @@ class ClientGUI:
                         self.updateMovie(
                             self.writeFrame(rtpPacket.getPayload()))
             except:
-                # Stop listening upon requesting PAUSE or TEARDOWN
-                if self.playEvent.isSet():
-                    break
-
                 self.rtpSocket.shutdown(socket.SHUT_RDWR)
                 self.rtpSocket.close()
                 break
