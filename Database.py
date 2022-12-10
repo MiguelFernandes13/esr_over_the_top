@@ -139,6 +139,7 @@ class Database:
         for (nodeIp, node) in self.nodes.items():
             for external in node.externalInterfaces:
                 nodeBin = self.toBin(external)
+                print(f"nodeBin: {nodeBin} - nodeIp: {nodeIp}")
                 conta = 0
                 for i in range(24):
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
