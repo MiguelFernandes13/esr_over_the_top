@@ -81,7 +81,8 @@ class NodeDataBase:
     def addSendTo(self, ip, port):
         try:
             self.lock.acquire()
-            self.sendTo.append((ip, port))
+            if (ip, port) not in self.sendTo:
+                self.sendTo.append((ip, port))
         finally:
             self.lock.release()
 

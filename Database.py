@@ -102,7 +102,8 @@ class Database:
             node: Node
             if node := self.nodes.get(nodeIp):
                 node.startStreaming(s)
-                self.streamTo.append(node)
+                if not node in self.streamTo:
+                    self.streamTo.append(node)
         finally:
             self.lock.release()
 
