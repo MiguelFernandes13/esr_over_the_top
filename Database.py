@@ -41,7 +41,8 @@ class Database:
     neighbors : dict # [ips]
     #iptobin: list # [ ('bin', 'ip') ]
     streamTo: list # [Node]
-    mask = bin(24)
+    mask : int
+    maskBin : bin
 
     def __init__(self, ip):
         self.ip = ip
@@ -50,6 +51,8 @@ class Database:
         self.neighbors = {}
         #self.iptobin = []
         self.streamTo = []
+        self.mask = 24
+        self.masBin = bin(self.mask)
 
 
     def addNeighbors(self, neighbors : list):
@@ -141,15 +144,13 @@ class Database:
                 nodeBin = self.toBin(external)
                 print(f"nodeBin: {nodeBin} - nodeIp: {nodeIp}")
                 conta = 0
-                stop = False
-                for i in range(24):
-                    if stop == False:
-                        #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                        if int(binIp[i]) == int(nodeBin[i]): conta += 1
-                        else:
-                            print("conta: ", conta)
-                            if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
-                            stop = True
+                for i in range(self.mask):
+                    #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
+                    if (int(binIp[i]) == int(nodeBin[i]) and i < (self.mask - 1) ): conta += 1
+                    else:
+                        print("conta: ", conta)
+                        if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
+                        break
         return selected[0]
 
         
