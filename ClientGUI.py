@@ -14,7 +14,6 @@ class ClientGUI:
     def __init__(self, master, clientaddr, clientport, serveraddr):
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.handler)
-        self.createWidgets()
         self.clientAddr = clientaddr
         self.serverAddr = serveraddr
         self.serverPort = 5002
@@ -23,6 +22,7 @@ class ClientGUI:
         self.sessionId = 0
         self.rtpSocket = None
         self.setupMovie()
+        self.createWidgets()
         self.playMovie()
         self.frameNbr = 0
 
