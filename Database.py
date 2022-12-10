@@ -141,13 +141,15 @@ class Database:
                 nodeBin = self.toBin(external)
                 print(f"nodeBin: {nodeBin} - nodeIp: {nodeIp}")
                 conta = 0
+                stop = False
                 for i in range(24):
-                    #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                    if int(binIp[i]) == int(nodeBin[i]): conta += 1
-                    else:
-                        print("conta: ", conta)
-                        if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
-                        break
+                    if stop == False:
+                        #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
+                        if int(binIp[i]) == int(nodeBin[i]): conta += 1
+                        else:
+                            print("conta: ", conta)
+                            if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
+                            stop = True
         return selected[0]
 
         
