@@ -145,6 +145,7 @@ class Database:
                     #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
                     if int(binIp[i]) == int(nodeBin[i]): conta += 1
                     else:
+                        print("conta: ", conta)
                         if conta > selected[1]: selected = (nodeIp, conta); print("selected: ", selected)
                         break
         return selected[0]
