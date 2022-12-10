@@ -11,13 +11,13 @@
     {
       "Ip": "10.0.1.2",
       "InternalInterfaces": [ "10.0.1.2", "10.0.5.1"],
-      "ExternalInterfaces": [ "10.0.4.0/24" ],
+      "ExternalInterfaces": [ "10.0.3.0/24" ],
       "Neighbors": ["10.0.1.1", "10.0.5.2"]
     },
     {
       "Ip": "10.0.2.2",
       "InternalInterfaces": [ "10.0.2.2", "10.0.5.2"],
-      "ExternalInterfaces": [ "10.0.3.0/24" ],
+      "ExternalInterfaces": [ "10.0.4.0/24" ],
       "Neighbors": [ "10.0.2.1", "10.0.5.1" ]
     }
   ]
