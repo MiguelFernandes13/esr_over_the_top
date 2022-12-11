@@ -1,24 +1,28 @@
 {
-  "Ip" : "10.0.0.10",
-  "Neighbors": [ "10.0.0.1" ],
-  "Nodes": [
-    {
-      "Ip": "10.0.0.1",
-      "InternalInterfaces": [ "10.0.0.1", "10.0.1.1", "10.0.2.1"],
-      "ExternalInterfaces": [],
-      "Neighbors": [ "10.0.0.10", "10.0.1.2", "10.0.2.2" ]
+  "Server": {
+    "Ip": "10.0.14.10",
+    "Neighbors": ["10.0.14.1"]
+  },
+  "HelperServers": [],
+  "Nodes": [{
+      "InternalInterfaces": ["10.0.10.2", "10.0.9.2"],
+      "Clients": [],
+      "Neighbors": ["10.0.10.1", "10.0.8.1"]
     },
     {
-      "Ip": "10.0.1.2",
-      "InternalInterfaces": [ "10.0.1.2", "10.0.5.1"],
-      "ExternalInterfaces": [ "10.0.3.0/24" ],
-      "Neighbors": ["10.0.1.1", "10.0.5.2"]
+      "InternalInterfaces": ["10.0.6.2", "10.0.10.1"],
+      "Clients": ["10.0.12.21"],
+      "Neighbors": ["10.0.10.2", "10.0.3.1"]
     },
     {
-      "Ip": "10.0.2.2",
-      "InternalInterfaces": [ "10.0.2.2", "10.0.5.2"],
-      "ExternalInterfaces": [ "10.0.4.0/24" ],
-      "Neighbors": [ "10.0.2.1", "10.0.5.1" ]
+      "InternalInterfaces": ["10.0.3.1", "10.0.0.1"],
+      "Clients": ["10.0.11.21", "10.0.11.20"],
+      "Neighbors": ["10.0.6.2", "10.0.1.2"]
+    },
+    {
+      "InternalInterfaces": ["10.0.1.2", "10.0.8.1"],
+      "Clients": ["10.0.13.20"],
+      "Neighbors": ["10.0.0.1", "10.0.9.2"]
     }
   ]
 }
