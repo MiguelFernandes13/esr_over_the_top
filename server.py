@@ -96,6 +96,21 @@ def join_stream_client(db: Database):
         print(f"Conectado a {add[0]}:{add[1]}")
         threading.Thread(target=streaming_client, args=(db, add, client)).start()
 
+def stopStream(db: Database):
+    s : socket.socket
+    porta : int
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    porta = 5003
+
+    s.bind((db.ip, porta))
+    s.listen(5)
+
+    while True:
+        client, _ = s.accept()
+        ip = client.recv(1024).decode('utf-8')
+        db.stopStream(ip)
+        client.close()
 
 def makeRtp(payload, frameNbr):
     """RTP-packetize the video data."""
@@ -137,6 +152,7 @@ def sendRtp(db: Database, video: VideoStream):
 #print('-'*60)
 #traceback.print_exc(file=sys.stdout)
 #print('-'*60)
+
 
 def keepAlive(db: Database, server_address: str):
     seq = 0

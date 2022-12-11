@@ -55,6 +55,13 @@ class NodeDataBase:
             self.streams[ip] = stream
         finally:
             self.lock.release()
+    
+    def updateReceiveFrom(self, ip):
+        try:
+            self.lock.acquire()
+            self.receiveFrom = ip
+        finally:
+            self.lock.release()
 
     def getIpToInterface(self, ip) -> str:
         return self.iPToInterface[ip]

@@ -29,6 +29,14 @@ class NodeClient:
         except:
             print("Connection Error to ", add[0], ":", add[1])
 
+    def recalculate_roots(self):
+        best = self.db.bestNeighbor()
+        oldBest = self.db.receiveFrom
+        if best != oldBest:
+            self.send_request_to_stream(best)
+            self.send_stop_stream(oldBest)
+            self.db.updateReceiveFrom(best)
+
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg,_ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
@@ -42,6 +50,7 @@ class NodeClient:
         #atualizar o tempo de vida do cliente
         #atualizar o numero de saltos do cliente
         self.db.update(server_address, add[0], time_, jump, stream, interface)
+        threading.Thread(target=self.recalculate_roots).start()
         print("Tempos de vida ", self.db.times)
         print("Saltos ", self.db.jumps)
         self.db.addSent(server_address, add[0], seq)
@@ -62,6 +71,13 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add, interface)).start()
 
+    def send_request_to_stream(self, ip : str):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip, 5001))
+        message = f'{self.db.getIpToInterface(ip)}$5002'
+        s.sendall(message.encode('utf-8'))
+        s.close()
+
 
     def start_streaming(self, client: socket, add: tuple, interface: str):
         message, _ = client.recvfrom(1024)
@@ -76,13 +92,8 @@ class NodeClient:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.bestNeighbor()
             self.db.addReceiveFrom(ip)
-            entryInterface = self.db.getIpToInterface(best)
             print(f"O melhor vizinho e {best}")
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((best, 5001))
-            message = f'{entryInterface}${5002}'
-            s.sendall(message.encode('utf-8'))
-            s.close()
+            self.send_request_to_stream(best)
             self.db.streaming = True
 
     def waitToStream(self, interface: str):
@@ -93,6 +104,13 @@ class NodeClient:
             client, add = s.accept()
             threading.Thread(target=self.start_streaming,
                              args=(client, add, interface)).start()
+
+    def send_stop_stream(self, ip : str):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip, 5003))
+        message = f'{self.serverAddr}$5002'
+        s.sendall(message.encode('utf-8'))
+        s.close()
 
     def stop_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
@@ -127,11 +145,6 @@ class NodeClient:
                 print(f"Enviando stream para {i}")
                 threading.Thread(target=self.send_stream, args=(i, message)).start()
 
-    def recalulate_roots(self):
-        while True:
-            time.sleep(10)
-            self.db.recalulateRoots()
-
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)
         list = [n.strip() for n in list]
@@ -157,6 +170,7 @@ class NodeClient:
         for i in self.db.getInterfaces():
             threading.Thread(target=self.keepAlive, args=(i, )).start()
             threading.Thread(target=self.waitToStream, args=(i, )).start()
+            threading.Thread(target=self.waitToStopStream, args=(i, )).start()
             threading.Thread(target=self.resend_stream, args=(i, )).start()
 
         #self.watchStream()
