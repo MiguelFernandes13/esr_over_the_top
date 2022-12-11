@@ -122,6 +122,7 @@ class Server:
 
     def sendRtp(self, video: VideoStream):
         """Send RTP packets over UDP."""
+        node : Node
         while True:
             time.sleep(0.05)
 
@@ -129,12 +130,12 @@ class Server:
             if data:
                 frameNumber = video.frameNbr()
                 try:
-                    for i in self.database.getStreamToList():
-                        address = i.ip
+                    for node in self.database.getStreamToList():
+                        address = node.ip_to_server
                         port = 5002
                         print(
                             f"Sending frame {frameNumber} to {address}:{port}")
-                        i.rtpSocket.sendto(self.makeRtp(data, frameNumber),
+                        node.rtpSocket.sendto(self.makeRtp(data, frameNumber),
                                            (address, port))
                 except:
                     print("Connection Error")
