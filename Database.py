@@ -82,14 +82,7 @@ class Database:
             self.lock.release()
 
     def getNode(self, nodeIp) -> Node:
-        res: Node
-        res = None
-        for node in self.nodes.values():
-            interfaces = node.internalInterfaces
-            if (nodeIp in interfaces):
-                res = node
-                break
-        return res
+        return self.nodes.get(nodeIp)
 
     def connectNode(self, nodeIp):
         try:
