@@ -5,7 +5,7 @@
   },
   "HelperServers": [],
   "Nodes": [{
-      "InternalInterfaces": ["10.0.10.2", "10.0.9.2"],
+      "InternalInterfaces": ["10.0.14.1", "10.0.10.2", "10.0.9.2"],
       "Clients": [],
       "Neighbors": ["10.0.10.1", "10.0.8.1"]
     },
