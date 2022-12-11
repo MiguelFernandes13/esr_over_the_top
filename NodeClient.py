@@ -40,8 +40,8 @@ class NodeClient:
             interface = self.db.getIpToInterface(best)
             p = multiprocessing.Process(target=self.resend_stream, args=(interface, ))
             p.start()
-            self.db.waitIp = best
             if oldBest != "":
+                self.db.waitIp = best
                 self.db.waitStream.acquire()
                 try:
                     print("Waiting for stream")
