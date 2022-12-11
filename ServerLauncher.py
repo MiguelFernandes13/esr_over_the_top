@@ -1,6 +1,4 @@
-from Server import Server
+from server import Server
 
-if __name__ == "__main__":
-
-    app = Server()
-    app.main()
+app = Server()
+app.main()

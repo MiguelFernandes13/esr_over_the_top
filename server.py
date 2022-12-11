@@ -2,7 +2,6 @@ from random import randint
 import socket
 import threading
 import time
-from signal import signal, SIGPIPE, SIG_DFL
 from RtpPacket import RtpPacket
 from VideoStream import VideoStream
 from Database import Database, Node
