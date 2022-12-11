@@ -14,7 +14,6 @@ class ClientGUI:
     def __init__(self, master, clientaddr, clientport, serveraddr):
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.handler)
-        self.createWidgets()
         self.clientAddr = clientaddr
         self.serverAddr = serveraddr
         self.serverPort = 5002
@@ -23,6 +22,7 @@ class ClientGUI:
         self.sessionId = 0
         self.rtpSocket = None
         self.setupMovie()
+        self.createWidgets()
         self.playMovie()
         self.frameNbr = 0
 
@@ -58,6 +58,8 @@ class ClientGUI:
 
         s.send(str(self.clientPort).encode('utf-8'))
 
+        self.sessionId = int(s.recv(1024).decode('utf-8'))
+
         s.close()
         self.openRtpPort()
         print("Conexão com o servidor estabelecida...")
@@ -72,10 +74,8 @@ class ClientGUI:
     def playMovie(self):
         """Play button handler."""
         # Create a new thread to listen for RTP packets
-        threading.Thread(target=self.setupMovie).start()
         threading.Thread(target=self.listenRtp).start()
-        self.playEvent = threading.Event()
-        self.playEvent.clear()
+
 
     def listenRtp(self):
         """Listen for RTP packets."""
@@ -94,10 +94,6 @@ class ClientGUI:
                         self.updateMovie(
                             self.writeFrame(rtpPacket.getPayload()))
             except:
-                # Stop listening upon requesting PAUSE or TEARDOWN
-                if self.playEvent.isSet():
-                    break
-
                 self.rtpSocket.shutdown(socket.SHUT_RDWR)
                 self.rtpSocket.close()
                 break

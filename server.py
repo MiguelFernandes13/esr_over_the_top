@@ -8,7 +8,6 @@ from VideoStream import VideoStream
 from Database import Database, Node
 import json
 
-
 class Server:
     serverAddr: str
     database: Database
@@ -153,6 +152,23 @@ class Server:
 
         return rtpPacket.getPacket()
 
+    def stopStream(self):
+        s : socket.socket
+        porta : int
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        porta = 5003
+
+        s.bind((self.serverAddr, porta))
+        s.listen(5)
+
+        while True:
+            client, _ = s.accept()
+            message = client.recv(1024).decode('utf-8')
+            ip = message.split('$')[0]
+            self.database.leaveStream(ip)
+            client.close()
+            
     def keepAlive(self):
         node: Node
         seq = 0

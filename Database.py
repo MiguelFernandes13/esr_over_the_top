@@ -57,6 +57,8 @@ class Database:
         self.all_nodes = []
         self.neighbors = {}
         self.streamTo = []
+        self.mask = 24
+        self.masBin = bin(self.mask)
 
     def addNeighbors(self, neighbors: list):
         try:
@@ -116,7 +118,19 @@ class Database:
             node: Node
             if node := self.getNode(nodeIp):
                 node.startStreaming(s)
-                self.streamTo.append(node)
+                if not node in self.streamTo:
+                    self.streamTo.append(node)
+        finally:
+            self.lock.release()
+
+    def leaveStream(self, nodeIp):
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                node.stopStreaming()
+                if node in self.streamTo:
+                    self.streamTo.remove(node)
         finally:
             self.lock.release()
 
