@@ -9,7 +9,7 @@ if __name__ == "__main__":
         clientPort = sys.argv[2]
         serverAddr = sys.argv[3]
     except:
-        print("[Usage: Client.py <Server_Addr> <Client_Addr> ]\n")
+        print("[Usage: Client.py <Client_Addr> <Client_Port> <Server_Addr>]\n")
 
 root = Tk()
 

@@ -35,21 +35,22 @@ class Node:
 
 
 class Database:
-    ip : str
+    ip : list #
     lock : threading.Lock
     nodes: dict # { 'ip' : Node}
     neighbors : dict # [ips]
     #iptobin: list # [ ('bin', 'ip') ]
     streamTo: list # [Node]
-    mask = bin(24)
+    mask = bin
 
-    def __init__(self, ip):
+    def __init__(self, ip, Mask):
         self.ip = ip
         self.lock = threading.Lock()
         self.nodes = {}
         self.neighbors = {}
         #self.iptobin = []
         self.streamTo = []
+        self.mask = bin(Mask)
 
 
     def addNeighbors(self, neighbors : list):
