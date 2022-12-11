@@ -114,6 +114,7 @@ class NodeClient:
         s.connect((ip, 5003))
         message = f'{self.db.getIpToInterface(ip)}$5002'
         s.sendall(message.encode('utf-8'))
+        print("SEND STOP STREAM: ",message)
         s.close()
 
     def stop_streaming(self, client: socket):
