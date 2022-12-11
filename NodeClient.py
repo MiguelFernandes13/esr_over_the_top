@@ -36,6 +36,7 @@ class NodeClient:
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             self.send_request_to_stream(best)
+            time.sleep(1)
             self.send_stop_stream(oldBest)
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
@@ -78,6 +79,7 @@ class NodeClient:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, 5001))
         message = f'{self.db.getIpToInterface(ip)}$5002'
+        print("SEND REQUEST TO STREAM: ", message)
         s.sendall(message.encode('utf-8'))
         s.close()
 
