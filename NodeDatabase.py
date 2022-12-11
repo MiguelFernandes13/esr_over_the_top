@@ -177,7 +177,7 @@ class NodeDataBase:
         #a menos que exista um vizinho que não esta a fazer stream com um tempo razoavelmente melhor
         self.oldBest = bestNeighborTime
         if bestNeighborStreaming[0] != "" and bestNeighborTime[
-                1] / bestNeighborStreaming[1] > 0.8:
+                2] / bestNeighborStreaming[2] > 0.8:
             self.oldBest = bestNeighborStreaming
 
         return self.oldBest[0]
