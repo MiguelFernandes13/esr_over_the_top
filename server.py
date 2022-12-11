@@ -28,6 +28,7 @@ class Server:
         for i in data['Nodes']:
             self.database.addNode(i['InternalInterfaces'], i['Clients'],
                                   i['Neighbors'])
+            print(i['Neighbors'])
 
         self.database.addNeighbors(data['Server']['Neighbors'])
 
@@ -60,6 +61,7 @@ class Server:
         self.database.connectNode(add[0])
         message = str(self.database.getNeighbors(add[0])) + "$" + str(
             self.database.getInternalInterfaces(add[0]))
+        print(message)
         client.send(message.encode('utf-8'))
         client.close()
 
