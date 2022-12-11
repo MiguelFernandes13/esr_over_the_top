@@ -140,6 +140,7 @@ class NodeClient:
 
     def send_stream(self, address: tuple, message: bytes):
         if self.db.streaming:
+            print(f"Enviando stream para {address}")
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.sendto(message, address)
             s.close()
@@ -150,7 +151,6 @@ class NodeClient:
         while True:
             message, _ = s.recvfrom(20480)
             for i in self.db.getSendTo():
-                print(f"Enviando stream para {i}")
                 threading.Thread(target=self.send_stream,
                                  args=(i, message)).start()
 
