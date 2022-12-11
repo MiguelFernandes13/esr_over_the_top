@@ -32,12 +32,11 @@ class NodeClient:
 
     def recalculate_roots(self):
         oldBest = self.db.receiveFrom
-        if self.db.streaming and oldBest != "":
-            best = self.db.bestNeighbor()
-            if best != oldBest:
-                self.send_request_to_stream(best)
-                self.send_stop_stream(oldBest)
-                self.db.updateReceiveFrom(best)
+        best = self.db.bestNeighbor()
+        self.db.updateReceiveFrom(best)
+        if best != oldBest and self.db.streaming:
+            self.send_request_to_stream(best)
+            self.send_stop_stream(oldBest)
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg, _ = client.recvfrom(1024)
