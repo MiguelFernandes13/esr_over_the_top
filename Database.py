@@ -110,6 +110,17 @@ class Database:
         finally:
             self.lock.release()
 
+    def leaveStream(self, nodeIp):
+        try:
+            self.lock.acquire()
+            node: Node
+            if node := self.nodes.get(nodeIp):
+                node.stopStreaming()
+                if node in self.streamTo:
+                    self.streamTo.remove(node)
+        finally:
+            self.lock.release()
+
     def getStreamToList(self) -> list:
         return self.streamTo
     
