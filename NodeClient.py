@@ -81,7 +81,7 @@ class NodeClient:
         s.sendall(message.encode('utf-8'))
         s.close()
 
-    def start_streaming(self, client: socket, add: tuple, interface: str):
+    def start_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
         message = message.decode(
             'utf-8')  #recebe o ip e a porta do cliente que quer ver o stream
@@ -91,7 +91,6 @@ class NodeClient:
         port = int(message[1])
         self.db.addSendTo(ip, port)
 
-        print(f"Recebi {message} de {add[0]}:{add[1]}")
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.receiveFrom
@@ -104,9 +103,9 @@ class NodeClient:
         s.bind((interface, 5001))
         s.listen(5)
         while True:
-            client, add = s.accept()
+            client, _ = s.accept()
             threading.Thread(target=self.start_streaming,
-                             args=(client, add, interface)).start()
+                             args=(client,)).start()
 
     def send_stop_stream(self, ip: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
