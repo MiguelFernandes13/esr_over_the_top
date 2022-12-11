@@ -108,8 +108,9 @@ def stopStream(db: Database):
 
     while True:
         client, _ = s.accept()
-        ip = client.recv(1024).decode('utf-8')
-        db.stopStream(ip)
+        message = client.recv(1024).decode('utf-8')
+        ip = message.split('$')[0]
+        db.leaveStream(ip)
         client.close()
 
 def makeRtp(payload, frameNbr):

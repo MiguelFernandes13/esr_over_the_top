@@ -30,8 +30,8 @@ class NodeClient:
             print("Connection Error to ", add[0], ":", add[1])
 
     def recalculate_roots(self):
-        best = self.db.bestNeighbor()
         oldBest = self.db.receiveFrom
+        best = self.db.bestNeighbor()
         if best != oldBest:
             self.send_request_to_stream(best)
             self.send_stop_stream(oldBest)
@@ -121,6 +121,7 @@ class NodeClient:
         self.db.removeSendTo(ip, port)
         if len(self.db.getSendTo()) == 0:
             self.db.streaming = False
+            self.send_stop_stream(self.db.receiveFrom)
         client.close()
 
     def waitToStopStream(self, interface: str):
