@@ -86,6 +86,7 @@ class NodeClient:
         message = message.decode(
             'utf-8')  #recebe o ip e a porta do cliente que quer ver o stream
         message = message.split('$')
+        print("Start Streaming to:", message)
         ip = message[0]
         port = int(message[1])
         self.db.addSendTo(ip, port)
