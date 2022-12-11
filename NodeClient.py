@@ -1,6 +1,7 @@
 import socket
 import sys
 import threading
+import multiprocessing
 import time
 from tkinter import *
 import ast
@@ -36,7 +37,20 @@ class NodeClient:
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             self.send_request_to_stream(best)
-            time.sleep(1)
+            interface = self.db.getIpToInterface(best)
+            p = multiprocessing.Process(target=self.resend_stream, args=(interface, ))
+            p.start()
+            self.db.waitIp = best
+            if oldBest != "":
+                self.db.waitStream.acquire()
+                try:
+                    print("Waiting for stream")
+                    self.db.waitStream.notify()
+                finally:
+                    self.db.waitStream.release()
+            if self.db.processReceive is not None:
+                self.db.processReceive.terminate()
+            self.db.processReceive = p
             self.send_stop_stream(oldBest)
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
@@ -140,20 +154,28 @@ class NodeClient:
                              args=(client, )).start()
 
     def send_stream(self, address: tuple, message: bytes):
-        if self.db.streaming:
-            print(f"Enviando stream para {address}")
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.sendto(message, address)
-            s.close()
+        print(f"Enviando stream para {address}")
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.sendto(message, address)
+        s.close()
 
     def resend_stream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind((interface, 5002))
-        while True:
-            message, _ = s.recvfrom(20480)
-            for i in self.db.getSendTo():
-                threading.Thread(target=self.send_stream,
-                                 args=(i, message)).start()
+        try:
+            while True:
+                message, add = s.recvfrom(20480)
+                if add[0] == self.db.waitIp:
+                    self.db.waitStream.acquire()
+                    try:
+                        self.db.waitStream.notify()
+                    finally:
+                        self.db.waitStream.release()
+                for i in self.db.getSendTo():
+                    threading.Thread(target=self.send_stream,
+                                     args=(i, message)).start()
+        finally:
+            s.close()
 
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)
@@ -180,6 +202,6 @@ class NodeClient:
             threading.Thread(target=self.keepAlive, args=(i, )).start()
             threading.Thread(target=self.waitToStream, args=(i, )).start()
             threading.Thread(target=self.waitToStopStream, args=(i, )).start()
-            threading.Thread(target=self.resend_stream, args=(i, )).start()
+            #threading.Thread(target=self.resend_stream, args=(i, )).start()
 
         #self.watchStream()

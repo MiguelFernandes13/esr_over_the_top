@@ -1,5 +1,6 @@
 import sys
 import threading
+import multiprocessing
 
 
 class NodeDataBase:
@@ -15,6 +16,9 @@ class NodeDataBase:
     receiveFrom: str
     oldBest: tuple  # (ip, serverAddress, time, jumps)
     lock: threading.Lock
+    processReceive: multiprocessing.Process
+    waitStreamCondition: threading.Condition
+    waitIp = str
 
     def __init__(self):
         self.interfaces = []
@@ -27,8 +31,12 @@ class NodeDataBase:
         self.alreadySent = {}
         self.sendTo = []
         self.receiveFrom = ""
+        self.waitStreamCondition = threading.Condition()
         self.oldBest = ("", "", 0, 0)
         self.lock = threading.Lock()
+
+        self.waitStream = threading.Condition()
+        self.waitIp = ""
 
     def addNeighbors(self, list: list):
         try:
