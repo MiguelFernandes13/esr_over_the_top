@@ -32,7 +32,7 @@ class NodeClient:
 
     def recalculate_roots(self):
         oldBest = self.db.receiveFrom
-        if self.db.streaming:
+        if self.db.streaming and oldBest != "":
             best = self.db.bestNeighbor()
             if best != oldBest:
                 self.send_request_to_stream(best)
