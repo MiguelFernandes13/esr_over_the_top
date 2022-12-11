@@ -83,6 +83,7 @@ class Database:
 
     def getNode(self, nodeIp) -> Node:
         res: Node
+        res = None
         for node in self.nodes.values():
             interfaces = node.internalInterfaces
             if (nodeIp in interfaces):
