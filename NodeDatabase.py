@@ -104,13 +104,6 @@ class NodeDataBase:
         finally:
             self.lock.release()
 
-    def addReceiveFrom(self, ip):
-        try:
-            self.lock.acquire()
-            self.receiveFrom = ip
-        finally:
-            self.lock.release()
-
     def getSendTo(self) -> list:
         return self.sendTo
 

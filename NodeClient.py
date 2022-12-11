@@ -95,7 +95,6 @@ class NodeClient:
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.receiveFrom
-            self.db.addReceiveFrom(ip)
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best)
             self.db.streaming = True
