@@ -129,7 +129,6 @@ class Server:
             if data:
                 frameNumber = video.frameNbr()
                 try:
-                    print("List of streams: ", self.database.getStreamToList())
                     for i in self.database.getStreamToList():
                         address = i.ip
                         port = 5002
