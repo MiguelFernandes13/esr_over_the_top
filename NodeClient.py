@@ -123,6 +123,7 @@ class NodeClient:
         ip = message[0]
         port = int(message[1])
         self.db.removeSendTo(ip, port)
+        print("Remove:", message)
         if len(self.db.getSendTo()) == 0:
             self.db.streaming = False
             self.send_stop_stream(self.db.receiveFrom)
@@ -138,9 +139,10 @@ class NodeClient:
                              args=(client, add)).start()
 
     def send_stream(self, address: tuple, message: bytes):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(message, address)
-        s.close()
+        if self.db.streaming:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(message, address)
+            s.close()
 
     def resend_stream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
