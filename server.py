@@ -59,6 +59,7 @@ class Server:
 
     def send_neighbors(self, add: tuple, client: socket):
         self.database.connectNode(add[0])
+        print(add[0])
         message = str(self.database.getNeighbors(add[0])) + "$" + str(
             self.database.getInternalInterfaces(add[0]))
         print(message)

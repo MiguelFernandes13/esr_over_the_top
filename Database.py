@@ -70,10 +70,10 @@ class Database:
         finally:
             self.lock.release()
 
-    def addNode(self, internalInterfaces, externalInterfaces, neighbors):
+    def addNode(self, internalInterfaces, clients, neighbors):
         try:
             self.lock.acquire()
-            node = Node(internalInterfaces, externalInterfaces, neighbors)
+            node = Node(internalInterfaces, clients, neighbors)
             self.all_nodes.append(node)
 
             for interface in internalInterfaces:
