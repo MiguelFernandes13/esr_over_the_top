@@ -5,7 +5,7 @@ import time
 from signal import signal, SIGPIPE, SIG_DFL
 from RtpPacket import RtpPacket
 from VideoStream import VideoStream
-from Database import Database
+from Database import Database, Node
 import json
 
 
@@ -13,8 +13,8 @@ class Server:
     serverAddr: str
     database: Database
 
-    def __init__(self, serveraddr):
-        self.serverAddr = serveraddr
+    def __init__(self):
+        self.serverAddr = ""
         self.database = None
 
     def main(self):
@@ -23,14 +23,14 @@ class Server:
         data = json.loads(config_text)
 
         video = VideoStream("movie.Mjpeg")
-        self.database = Database(self.serverAddr, data['Mask'])
+        self.serverAddr = data['Server']['Ip']
+        self.database = Database(self.serverAddr)
 
         for i in data['Nodes']:
-            self.database.addNode(i['Id'], i['InternalInterfaces'],
-                                  i['ExternalInterfaces'], i['Neighbors'])
+            self.database.addNode(i['InternalInterfaces'], i['Clients'],
+                                  i['Neighbors'])
 
-        self.database.addNeighbors(
-            data['Servers'][self.serverAddr]['Neighbors'])
+        self.database.addNeighbors(data['Server']['Neighbors'])
 
         threading.Thread(target=self.join_network).start()
         threading.Thread(target=self.join_stream_node).start()
@@ -83,11 +83,8 @@ class Server:
         message = s.recv(1024).decode('utf-8')
         print("Message: ", message)
         ip = message.split('$')[0]
-        port = int(message.split('$')[1])
         rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.database.joinStream(ip, rtpSocket)
-        #s.send(str(db.nodes[add[0]].port).encode('utf-8'))
-        #print("Stream To: ", db.streamTo['10.0.0.10'][0].port)
 
     def join_stream_client(self):
         s: socket.socket
@@ -157,11 +154,11 @@ class Server:
         return rtpPacket.getPacket()
 
     def keepAlive(self):
+        node: Node
         seq = 0
         while True:
             time.sleep(3)
-            for ip in self.database.neighbors:
-                node = self.database.getNodeByIp(ip)
+            for node in self.database.neighbors.values():
                 if node.active():
                     try:
                         #criar tantos sockets quantos os vizinhos
@@ -172,10 +169,10 @@ class Server:
                         seq += 1
                         print("Sending: ", message)
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        s.connect((ip, 5000))
+                        s.connect((node.ip_to_server, 5000))
                         s.sendall(message.encode('utf-8'))
                         s.close()
 
                     except:
                         print("Connection Error no keepalive")
-                        self.database.disconnectNode(ip)
+                        self.database.disconnectNode(node.ip_to_server)

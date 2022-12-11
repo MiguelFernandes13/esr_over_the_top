@@ -4,35 +4,33 @@ import socket
 
 
 class Node:
-    id: str  # binario
+    ip_to_server: str
     internalInterfaces: list
-    externalInterfaces: list
+    clients: list
     neighbors: list  # Node
     isActive: bool
     isStreaming: bool
-    #session : int
     port: int
     rtpSocket: socket
 
-    def __init__(self, id, internalInterfaces, externalInterfaces,
-                 neighbors) -> None:
-        self.id = id
+    def __init__(self, internalInterfaces, clients, neighbors) -> None:
+        self.ip_to_server = ""
         self.internalInterfaces = internalInterfaces
-        self.externalInterfaces = externalInterfaces
+        self.clients = clients
         self.neighbors = neighbors
         self.isActive = False
         self.isStreaming = False
 
     def startStreaming(self, s: socket):
         self.isStreaming = True
-        #   self.session = session
         self.rtpSocket = s
 
     def stopStreaming(self):
         self.isStreaming = False
 
-    def connect(self):
+    def connect(self, ip):
         self.isActive = True
+        self.ip_to_server = ip
 
     def disconnect(self):
         self.isActive = False
@@ -40,44 +38,48 @@ class Node:
     def active(self):
         return self.isActive
 
+    def isClient(self, clientIp):
+        return clientIp in self.clients
+
 
 class Database:
     ip: int
     lock: threading.Lock
-    nodes: dict  # { 'id' : Node}
+    nodes: dict  # { 'interface' : Node}
+    all_nodes: list
     neighbors: dict  # [ips]
-    #iptobin: list # [ ('bin', 'ip') ]
     streamTo: list  # [Node]
-    mask = bin
 
-    def __init__(self, Ip, Mask):
+    def __init__(self, Ip):
         self.ip = Ip
         self.lock = threading.Lock()
         self.nodes = {}
+        self.all_nodes = []
         self.neighbors = {}
-        #self.iptobin = []
         self.streamTo = []
-        self.mask = bin(Mask)
 
     def addNeighbors(self, neighbors: list):
         try:
             self.lock.acquire()
             for neighbor in neighbors:
                 if not neighbor in self.neighbors:
-                    node = self.getNodeByIp(neighbor)
+                    node = self.getNode(neighbor)
                     self.neighbors[neighbor] = node
         finally:
             self.lock.release()
 
-    def addNode(self, id, internalInterfaces, externalInterfaces, neighbors):
+    def addNode(self, internalInterfaces, externalInterfaces, neighbors):
         try:
             self.lock.acquire()
-            self.nodes[id] = Node(id, internalInterfaces, externalInterfaces,
-                                  neighbors)
+            node = Node(internalInterfaces, externalInterfaces, neighbors)
+            self.all_nodes.append(node)
+
+            for interface in internalInterfaces:
+                self.nodes[interface] = node
         finally:
             self.lock.release()
 
-    def getNodeByIp(self, nodeIp) -> Node:
+    def getNode(self, nodeIp) -> Node:
         try:
             self.lock.acquire()
             res: Node
@@ -90,19 +92,12 @@ class Database:
         finally:
             self.lock.release()
 
-    def getNode(self, nodeId) -> Node:
-        try:
-            self.lock.acquire()
-            return self.nodes[nodeId]
-        finally:
-            self.lock.release()
-
     def connectNode(self, nodeIp):
         try:
             self.lock.acquire()
             node: Node
-            if node := self.getNodeByIp(nodeIp):
-                node.connect()
+            if node := self.getNode(nodeIp):
+                node.connect(nodeIp)
         finally:
             self.lock.release()
 
@@ -110,7 +105,7 @@ class Database:
         try:
             self.lock.acquire()
             node: Node
-            if node := self.nodes.getNodeByIp(nodeIp):
+            if node := self.getNode(nodeIp):
                 node.disconnect()
         finally:
             self.lock.release()
@@ -119,7 +114,7 @@ class Database:
         try:
             self.lock.acquire()
             node: Node
-            if node := self.nodes.getNodeByIp(nodeIp):
+            if node := self.getNode(nodeIp):
                 node.startStreaming(s)
                 self.streamTo.append(node)
         finally:
@@ -132,7 +127,7 @@ class Database:
         try:
             self.lock.acquire()
             node: Node
-            if node := self.nodes.getNodeByIp(nodeIp):
+            if node := self.getNode(nodeIp):
                 return node.neighbors
         finally:
             self.lock.release()
@@ -141,30 +136,13 @@ class Database:
         try:
             self.lock.acquire()
             node: Node
-            if node := self.nodes.getNodeByIp(nodeIp):
+            if node := self.getNode(nodeIp):
                 return node.internalInterfaces
         finally:
             self.lock.release()
 
-    def toBin(self, ip):
-        ipSplited = ip.split('/')
-        return ''.join(
-            [bin(int(x) + 256)[3:] for x in ipSplited[0].split('.')])
-
     def getStreamTo(self, clientIp) -> str:
-        binIp = self.toBin(clientIp)
-        print("binIp: ", binIp)
-        selected = ('', 0)
-        for (nodeId, node) in self.nodes.items():
-            for external in node.externalInterfaces:
-                nodeBin = self.toBin(external)
-                conta = 0
-                for i in range(24):
-                    #res = res + str(int(nodeBin[i]) & int(nodeIp[i]))
-                    if int(binIp[i]) == int(nodeBin[i]): conta += 1
-                    else:
-                        if conta > selected[1]:
-                            selected = (nodeId, conta)
-                            print("selected: ", selected)
-                        break
-        return selected[0]
+        node: Node
+        for node in self.all_nodes:
+            if (node.isClient(clientIp)):
+                return node.ip_to_server

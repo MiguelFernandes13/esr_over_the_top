@@ -1,32 +1,27 @@
 {
-  "Servers": [{
-    "10.0.14.10": {
-      "Neighbors": ["10.0.14.1"]
-    }
-  }],
-  "Mask": 24,
+  "Server": {
+    "Ip": "10.0.14.10",
+    "Neighbors": ["10.0.14.1"]
+  },
+  "HelperServers": [],
   "Nodes": [{
-      "Id": "1",
       "InternalInterfaces": ["10.0.10.2", "10.0.9.2"],
-      "ExternalInterfaces": ["10.0.9.2"],
+      "Clients": [],
       "Neighbors": ["10.0.10.1", "10.0.8.1"]
     },
     {
-      "Id": "2",
       "InternalInterfaces": ["10.0.6.2", "10.0.10.1"],
-      "ExternalInterfaces": ["10.0.7.1", "10.0.12.1", "10.0.6.2", "10.0.10.1"],
+      "Clients": ["10.0.12.21"],
       "Neighbors": ["10.0.10.2", "10.0.3.1"]
     },
     {
-      "Id": "3",
       "InternalInterfaces": ["10.0.3.1", "10.0.0.1"],
-      "ExternalInterfaces": ["10.0.11.1", "10.0.3.1", "10.0.0.1"],
+      "Clients": ["10.0.11.21", "10.0.11.20"],
       "Neighbors": ["10.0.6.2", "10.0.1.2"]
     },
     {
-      "Id": "4",
       "InternalInterfaces": ["10.0.1.2", "10.0.8.1"],
-      "ExternalInterfaces": ["10.0.4.1", "10.0.13.1", "10.0.1.2", "10.0.8.1"],
+      "Clients": ["10.0.13.20"],
       "Neighbors": ["10.0.0.1", "10.0.9.2"]
     }
   ]
