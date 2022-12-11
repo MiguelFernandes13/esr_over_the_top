@@ -7,6 +7,7 @@ from VideoStream import VideoStream
 from Database import Database, Node
 import json
 
+
 class Server:
     serverAddr: str
     database: Database
@@ -35,6 +36,7 @@ class Server:
         threading.Thread(target=self.join_stream_client).start()
         threading.Thread(target=self.sendRtp, args=(video, )).start()
         threading.Thread(target=self.keepAlive).start()
+        threading.Thread(target=self.stopStream).start()
 
     def join_network(self):
         s: socket.socket
@@ -152,8 +154,8 @@ class Server:
         return rtpPacket.getPacket()
 
     def stopStream(self):
-        s : socket.socket
-        porta : int
+        s: socket.socket
+        porta: int
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         porta = 5003
@@ -167,7 +169,7 @@ class Server:
             ip = message.split('$')[0]
             self.database.leaveStream(ip)
             client.close()
-            
+
     def keepAlive(self):
         node: Node
         seq = 0
