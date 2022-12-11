@@ -33,6 +33,7 @@ class NodeDataBase:
         self.receiveFrom = ""
         self.oldBest = ("", "", 0, 0)
         self.lock = threading.Lock()
+        self.processReceive = None
         self.waitStream = threading.Condition()
         self.waitIp = ""
 
