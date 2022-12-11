@@ -18,7 +18,8 @@ class NodeClient:
         self.serverAddr = serveraddr
         self.db = NodeDataBase()
 
-    def send_keepAlive(self, server_address : str,add : tuple, seq : int, time : float, jump : int):
+    def send_keepAlive(self, server_address: str, add: tuple, seq: int,
+                       time: float, jump: int):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(add)
@@ -31,14 +32,15 @@ class NodeClient:
 
     def recalculate_roots(self):
         oldBest = self.db.receiveFrom
-        best = self.db.bestNeighbor()
-        if best != oldBest:
-            self.send_request_to_stream(best)
-            self.send_stop_stream(oldBest)
-            self.db.updateReceiveFrom(best)
+        if self.db.streaming:
+            best = self.db.bestNeighbor()
+            if best != oldBest:
+                self.send_request_to_stream(best)
+                self.send_stop_stream(oldBest)
+                self.db.updateReceiveFrom(best)
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
-        msg,_ = client.recvfrom(1024)
+        msg, _ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
         print(f"Mensagem recebida {msg_decode} de {add[0]}:{add[1]}")
         server_address = msg_decode[1]
@@ -59,7 +61,9 @@ class NodeClient:
         for i in self.db.getNeighbors():
             if i not in self.db.getSent(server_address, seq):
                 print(f"Enviando para {i}")
-                threading.Thread(target=self.send_keepAlive, args=(server_address, (i, 5000), seq, time_receveid, jump)).start()
+                threading.Thread(target=self.send_keepAlive,
+                                 args=(server_address, (i, 5000), seq,
+                                       time_receveid, jump)).start()
         client.close()
 
     def keepAlive(self, interface: str):
@@ -71,22 +75,22 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add, interface)).start()
 
-    def send_request_to_stream(self, ip : str):
+    def send_request_to_stream(self, ip: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, 5001))
         message = f'{self.db.getIpToInterface(ip)}$5002'
         s.sendall(message.encode('utf-8'))
         s.close()
 
-
     def start_streaming(self, client: socket, add: tuple, interface: str):
         message, _ = client.recvfrom(1024)
-        message = message.decode('utf-8') #recebe o ip e a porta do cliente que quer ver o stream
+        message = message.decode(
+            'utf-8')  #recebe o ip e a porta do cliente que quer ver o stream
         message = message.split('$')
         ip = message[0]
         port = int(message[1])
         self.db.addSendTo(ip, port)
-        
+
         print(f"Recebi {message} de {add[0]}:{add[1]}")
         if not self.db.streaming:
             #estabelecer uma rota desde o servidor ate ao nodo
@@ -105,7 +109,7 @@ class NodeClient:
             threading.Thread(target=self.start_streaming,
                              args=(client, add, interface)).start()
 
-    def send_stop_stream(self, ip : str):
+    def send_stop_stream(self, ip: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, 5003))
         message = f'{self.serverAddr}$5002'
@@ -130,7 +134,8 @@ class NodeClient:
         s.listen(5)
         while True:
             client, add = s.accept()
-            threading.Thread(target=self.stop_streaming,args=(client, add)).start()
+            threading.Thread(target=self.stop_streaming,
+                             args=(client, add)).start()
 
     def send_stream(self, address: tuple, message: bytes):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -141,16 +146,16 @@ class NodeClient:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind((interface, 5002))
         while True:
-            message,_ = s.recvfrom(20480)
+            message, _ = s.recvfrom(20480)
             for i in self.db.getSendTo():
                 print(f"Enviando stream para {i}")
-                threading.Thread(target=self.send_stream, args=(i, message)).start()
+                threading.Thread(target=self.send_stream,
+                                 args=(i, message)).start()
 
     def stringToList(self, string) -> list:
         list = ast.literal_eval(string)
         list = [n.strip() for n in list]
         return list
-
 
     def main(self):
         s: socket.socket
