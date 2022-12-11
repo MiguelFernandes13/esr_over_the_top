@@ -112,7 +112,7 @@ class NodeClient:
     def send_stop_stream(self, ip: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, 5003))
-        message = f'{self.serverAddr}$5002'
+        message = f'{self.db.getIpToInterface(ip)}$5002'
         s.sendall(message.encode('utf-8'))
         s.close()
 
