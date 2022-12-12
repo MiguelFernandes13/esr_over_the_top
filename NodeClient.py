@@ -67,6 +67,7 @@ class NodeClient:
         self.db.update(server_address, add[0], time_, jump, stream, interface)
         self.db.addSent(server_address, add[0], seq)
         if self.db.alreadySent[server_address].get(seq - 1):
+            print(f"{len(self.db.alreadySent[server_address][seq -1])} == {len(self.db.alreadySent[server_address][seq])}")
             if len(self.db.alreadySent[server_address][seq -1]) == len(self.db.alreadySent[server_address][seq]):
                 threading.Thread(target=self.recalculate_roots).start()
         else:
