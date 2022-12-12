@@ -40,20 +40,19 @@ class NodeClient:
             interface = self.db.getIpToInterface(best)
             p = multiprocessing.Process(target=self.resend_stream, args=(interface, ))
             p.start()
-            if oldBest != "":
+            if self.db.processReceive is not None:
                 self.db.waitIp = best
                 self.db.waitStream.acquire()
                 try:
                     print("Waiting for stream")
                     while not self.db.waitBool:
                         self.db.waitStream.wait()
-                finally:
                     self.db.waitBool = False
+                    self.db.processReceive.terminate()
+                    self.send_stop_stream(oldBest)
+                finally:
                     self.db.waitStream.release()
-            if self.db.processReceive is not None:
-                self.db.processReceive.terminate()
             self.db.processReceive = p
-            self.send_stop_stream(oldBest)
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg, _ = client.recvfrom(1024)
