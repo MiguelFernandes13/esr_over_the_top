@@ -37,7 +37,8 @@ class NodeClient:
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             self.send_request_to_stream(best)
-            p = multiprocessing.Process(target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
+            p = multiprocessing.Process(
+                target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
             p.start()
             if self.db.processReceive is not None:
                 self.db.waitIp = best
@@ -64,16 +65,16 @@ class NodeClient:
         time_ = time.time() - float(time_receveid)
         jump = int(msg_decode[4])
         stream = bool(msg_decode[5])
-        #atualizar o tempo de vida do cliente
-        #atualizar o numero de saltos do cliente
+        # atualizar o tempo de vida do cliente
+        # atualizar o numero de saltos do cliente
         self.db.update(server_address, add[0], time_, jump, stream, interface)
         print("Tempos de vida ", self.db.times)
         print("Saltos ", self.db.jumps)
         self.db.addSent(server_address, add[0], seq)
-        if len(self.db.getSendToBySeq(server_address, seq)) == len(self.db.getSendToBySeq(server_address, seq - 1)):
+        if (seq-1) in self.db.sendTo[server_address] and len(self.db.getSendToBySeq(server_address, seq)) == len(self.db.getSendToBySeq(server_address, seq - 1)):
             threading.Thread(target=self.recalculate_roots).start()
-        #enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
-        #enviar tambem se o nodo esta a fazer streaming
+        # enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
+        # enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
             if i not in self.db.getSent(server_address, seq):
                 print(f"Enviando para {i}")
@@ -102,7 +103,7 @@ class NodeClient:
     def start_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
         message = message.decode(
-            'utf-8')  #recebe o ip e a porta do cliente que quer ver o stream
+            'utf-8')  # recebe o ip e a porta do cliente que quer ver o stream
         message = message.split('$')
         print("Start Streaming to:", message)
         ip = message[0]
@@ -110,11 +111,12 @@ class NodeClient:
         self.db.addSendTo(ip, port)
 
         if not self.db.streaming:
-            #estabelecer uma rota desde o servidor ate ao nodo
+            # estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.receiveFrom
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best)
-            p = multiprocessing.Process(target=self.resend_stream,args=(self.db.getIpToInterface(best), ))
+            p = multiprocessing.Process(
+                target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
             p.start()
             self.db.processReceive = p
             self.db.streaming = True
@@ -211,4 +213,4 @@ class NodeClient:
             threading.Thread(target=self.waitToStopStream, args=(i, )).start()
             #threading.Thread(target=self.resend_stream, args=(i, )).start()
 
-        #self.watchStream()
+        # self.watchStream()
