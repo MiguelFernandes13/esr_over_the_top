@@ -42,16 +42,16 @@ class NodeClient:
             print("Changing stream")
             self.db.updateWaitBool(True)
             self.db.waitIp = best
-            self.send_request_to_stream(best, 5002)
-            self.db.waitStream.acquire()
-            try:
-                print("Waiting for stream")
-                while self.db.waitBool:
-                    self.db.waitStream.wait()
-                print("Stream received")
-                self.send_stop_stream(oldBest)
-            finally:
-                self.db.waitStream.release()
+            if self.send_request_to_stream(best, 5002):
+                self.db.waitStream.acquire()
+                try:
+                    print("Waiting for stream")
+                    while self.db.waitBool:
+                        self.db.waitStream.wait()
+                    print("Stream received")
+                    self.send_stop_stream(oldBest)
+                finally:
+                    self.db.waitStream.release()
 
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
@@ -90,7 +90,7 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add, interface)).start()
 
-    def send_request_to_stream(self, ip: str, port : int):
+    def send_request_to_stream(self, ip: str, port : int) -> bool:
         if (ip,port) not in self.db.getSendTo():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, 5001))
@@ -98,6 +98,9 @@ class NodeClient:
             print("SEND REQUEST TO STREAM: ", message)
             s.sendall(message.encode('utf-8'))
             s.close()
+            return True
+        else:
+            return False
 
     def start_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
