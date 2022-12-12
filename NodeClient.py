@@ -48,7 +48,6 @@ class NodeClient:
                     self.db.waitStream.wait()
                 print("Stream received")
                 self.db.waitBool = False
-                self.db.processReceive.terminate()
                 self.send_stop_stream(oldBest)
             finally:
                 self.db.waitStream.release()
