@@ -8,8 +8,8 @@ class NodeDataBase:
     streaming: bool
     neighbors: list
     iPToInterface: dict  # { 'ip' : interfaces }
-    times: dict  # { 'ip', : { (serverAddress, seq) :  time }  }
-    jumps: dict  # { 'ip' : { serverAddress : jumps }
+    times: dict  # { 'serverAddress', : { ip  :  time }  }
+    jumps: dict  # { 'serverAddress' : { ip : jumps }
     streams: dict  # { 'ip' : stream(on/off) }
     alreadySent: dict  # {serverAddress : {seq : [lista visitados] }
     alreadyReceived: dict  # {serverAddress : {seq : [lista recebidos] }
@@ -56,13 +56,13 @@ class NodeDataBase:
     def update(self, serverAddress, ip, time, jumps, stream, interface):
         try:
             self.lock.acquire()
-            if ip not in self.times.keys():
-                self.times[ip] = {}
-                self.jumps[ip] = {}
+            if serverAddress not in self.times.keys():
+                self.times[serverAddress] = {}
+                self.jumps[serverAddress] = {}
 
             self.iPToInterface[ip] = interface
-            self.times[ip][serverAddress] = time
-            self.jumps[ip][serverAddress] = jumps
+            self.times[serverAddress][ip] = time
+            self.jumps[serverAddress][ip] = jumps
             self.streams[ip] = stream
         finally:
             self.lock.release()
@@ -90,8 +90,8 @@ class NodeDataBase:
                 self.alreadyReceived[serverAdd] = {}
             if seq not in self.alreadyReceived[serverAdd].keys():
                 self.alreadyReceived[serverAdd][seq] = []
-                self.times = {}
-                self.jumps = {}
+                self.times[serverAdd] = {}
+                self.jumps[serverAdd] = {}
             self.alreadyReceived[serverAdd][seq].append(ip)
         finally:
             self.lock.release()
@@ -150,9 +150,9 @@ class NodeDataBase:
         else:
             bestNeighborStreaming = (
                 self.oldBest[0], self.oldBest[1],
-                self.times[self.oldBest[0]][self.oldBest[1]],
-                self.jumps[self.oldBest[0]][self.oldBest[1]]
-            )  # (ip, sever, time, jumps)
+                self.times[self.oldBest[1]][self.oldBest[0]],
+                self.jumps[self.oldBest[1]][self.oldBest[0]]
+            )  # (ip, server, time, jumps)
         bestNeighborTime = bestNeighborStreaming
         neighborStreaming = []
         for neighbor in self.neighbors:
@@ -161,39 +161,40 @@ class NodeDataBase:
         # Percorrer os vizinhos e verificar se algum deles está a fazer stream
         # Se estiver, guardar o vizinho com o melhores métricas, isto é, melhor tempo e menor número de saltos
         if len(neighborStreaming) != 0:
-            for neighbor in neighborStreaming:
-                for server in self.times[neighbor].keys():
-                    if self.times[neighbor][server] < bestNeighborStreaming[2]:
-                        #Se a diferença for minima o desempate é feito pelo número de saltos
-                        if self.times[neighbor][server] / bestNeighborStreaming[
-                                2] > jumpThreshold:
-                            if self.jumps[neighbor][
-                                    server] < bestNeighborStreaming[3]:
+            for server in self.times.keys():
+                for neighbor in neighborStreaming:
+                    if self.times[server].get(neighbor) is not None:
+                        if self.times[server][neighbor] < bestNeighborStreaming[2]:
+                            #Se a diferença for minima o desempate é feito pelo número de saltos
+                            if self.times[server][neighbor] / bestNeighborStreaming[
+                                    2] > jumpThreshold:
+                                if self.jumps[server][
+                                        neighbor] < bestNeighborStreaming[3]:
+                                    bestNeighborStreaming = (
+                                        neighbor, server,
+                                        self.times[server][neighbor],
+                                        self.jumps[server][neighbor])
+                            else:
                                 bestNeighborStreaming = (
-                                    neighbor, server,
-                                    self.times[neighbor][server],
-                                    self.jumps[neighbor][server])
-                        else:
-                            bestNeighborStreaming = (
-                                neighbor, server, self.times[neighbor][server],
-                                self.jumps[neighbor][server])
+                                    neighbor, server, self.times[server][neighbor],
+                                    self.jumps[server][neighbor])
+
         #Verificar qual o vizinho com o melhor tempo e menor número de saltos
-        for neighbor in self.neighbors:
-            if self.times.get(neighbor):
-                for server in self.times.get(neighbor).keys():
-                    if self.times[neighbor][server] < bestNeighborTime[2]:
-                        if self.times[neighbor][server] / bestNeighborTime[
+        for server in self.times.keys():
+            for neighbor in self.neighbors:
+                if self.times[server].get(neighbor) is not None:
+                    if self.times[server][neighbor] < bestNeighborTime[2]:
+                        if self.times[server][neighbor] / bestNeighborTime[
                                 2] > jumpThreshold:
-                            if self.jumps[neighbor][server] < bestNeighborTime[
-                                    3]:
+                            if self.jumps[server][neighbor] < bestNeighborTime[3]:
                                 bestNeighborTime = (
-                                    neighbor, server,
-                                    self.times[neighbor][server],
-                                    self.jumps[neighbor][server])
+                                    neighbor, server, self.times[server][neighbor],
+                                    self.jumps[server][neighbor])
                         else:
                             bestNeighborTime = (neighbor, server,
-                                                self.times[neighbor][server],
-                                                self.jumps[neighbor][server])
+                                                self.times[server][neighbor],
+                                                self.jumps[server][neighbor])
+
         #Caso exista um vizinho que esteja streaming, esse é sempre o melhor vizinho,
         #a menos que exista um vizinho que não esta a fazer stream com um tempo razoavelmente melhor
         self.oldBest = bestNeighborTime
