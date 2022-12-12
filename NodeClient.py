@@ -37,6 +37,7 @@ class NodeClient:
         best = self.db.bestNeighbor()
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
+            print("Changing stream")
             self.send_request_to_stream(best)
             p = multiprocessing.Process(
                 target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
