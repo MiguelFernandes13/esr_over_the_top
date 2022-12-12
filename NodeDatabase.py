@@ -186,8 +186,8 @@ class NodeDataBase:
             #Caso exista um vizinho que esteja streaming, esse é sempre o melhor vizinho,
             #a menos que exista um vizinho que não esta a fazer stream com um tempo razoavelmente melhor
             self.oldBest = bestNeighborTime
-            if bestNeighborStreaming[0] != "" and bestNeighborTime[
-                    2] / bestNeighborStreaming[2] > 0.8:
+            if bestNeighborStreaming[0] != "" and bestNeighborTime[ 
+                    2] / bestNeighborStreaming[2] > 0.7:
                 self.oldBest = bestNeighborStreaming
         finally:
             self.lock.release()
