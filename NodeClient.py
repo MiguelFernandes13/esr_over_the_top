@@ -165,6 +165,7 @@ class NodeClient:
         try:
             while True:
                 message, add = s.recvfrom(20480)
+                print(f"Received stream from {add} and waitIp is {self.db.waitIp}")
                 if add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
                     try:
