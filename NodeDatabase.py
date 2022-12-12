@@ -29,6 +29,7 @@ class NodeDataBase:
         self.jumps = {}
         self.streams = {}
         self.alreadySent = {}
+        self.alreadyReceived = {}
         self.sendTo = []
         self.receiveFrom = ""
         self.oldBest = ("", "", 0, 0)
@@ -80,6 +81,18 @@ class NodeDataBase:
 
     def getInterfaces(self) -> list:
         return self.interfaces
+
+    def addReceived(self, serverAdd, ip, seq):
+        try:
+            self.lock.acquire()
+            if serverAdd not in self.alreadyReceived.keys():
+                self.alreadyReceived[serverAdd] = {}
+            if seq not in self.alreadyReceived[serverAdd].keys():
+                self.alreadyReceived[serverAdd][seq] = []
+            self.alreadyReceived[serverAdd][seq].append(ip)
+            self.addSent(serverAdd, ip, seq)
+        finally:
+            self.lock.release()
 
     def addSent(self, serverAdd, ip, seq):
         try:
