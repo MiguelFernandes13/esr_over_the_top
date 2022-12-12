@@ -18,7 +18,8 @@ class NodeDataBase:
     lock: threading.Lock
     processReceive: multiprocessing.Process
     waitStreamCondition: threading.Condition
-    waitIp = str
+    waitIp : str
+    waitBool : bool
 
     def __init__(self):
         self.interfaces = []
@@ -36,6 +37,7 @@ class NodeDataBase:
         self.processReceive = None
         self.waitStream = threading.Condition()
         self.waitIp = ""
+        self.waitBool = False
 
     def addNeighbors(self, list: list):
         try:
