@@ -32,6 +32,7 @@ class NodeClient:
             print("Connection Error to ", add[0], ":", add[1])
 
     def recalculate_roots(self):
+        print("Recalculating roots")
         oldBest = self.db.receiveFrom
         best = self.db.bestNeighbor()
         self.db.updateReceiveFrom(best)
@@ -68,10 +69,10 @@ class NodeClient:
         # atualizar o tempo de vida do cliente
         # atualizar o numero de saltos do cliente
         self.db.update(server_address, add[0], time_, jump, stream, interface)
+        threading.Thread(target=self.recalculate_roots).start()
         print("Tempos de vida ", self.db.times)
         print("Saltos ", self.db.jumps)
         self.db.addSent(server_address, add[0], seq)
-        threading.Thread(target=self.recalculate_roots).start()
         # enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         # enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
