@@ -166,11 +166,11 @@ class NodeClient:
             while True:
                 message, add = s.recvfrom(20480)
                 if add[0] == self.db.waitIp:
-                    #self.db.waitStream.acquire()
-                    #try:
-                    self.db.waitStream.notify()
-                    #finally:
-                    #    self.db.waitStream.release()
+                    self.db.waitStream.acquire()
+                    try:
+                        self.db.waitStream.notify_all()
+                    finally:
+                        self.db.waitStream.release()
                 for i in self.db.getSendTo():
                     threading.Thread(target=self.send_stream,
                                      args=(i, message)).start()
