@@ -37,8 +37,7 @@ class NodeClient:
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             self.send_request_to_stream(best)
-            interface = self.db.getIpToInterface(best)
-            p = multiprocessing.Process(target=self.resend_stream, args=(interface, ))
+            p = multiprocessing.Process(target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
             p.start()
             if self.db.processReceive is not None:
                 self.db.waitIp = best
@@ -47,6 +46,7 @@ class NodeClient:
                     print("Waiting for stream")
                     while not self.db.waitBool:
                         self.db.waitStream.wait()
+                    print("Stream received")
                     self.db.waitBool = False
                     self.db.processReceive.terminate()
                     self.send_stop_stream(oldBest)
