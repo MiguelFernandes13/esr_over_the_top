@@ -42,7 +42,7 @@ class NodeClient:
             print("Changing stream")
             self.db.updateWaitBool(True)
             self.db.waitIp = best
-            self.send_request_to_stream(best)
+            self.send_request_to_stream(best, 5002)
             self.db.waitStream.acquire()
             try:
                 print("Waiting for stream")
@@ -90,8 +90,8 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add, interface)).start()
 
-    def send_request_to_stream(self, ip: str):
-        if (ip,5002) not in self.db.getSentTo():
+    def send_request_to_stream(self, ip: str, port : int):
+        if (ip,port) not in self.db.getSentTo():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, 5001))
             message = f'{self.db.getIpToInterface(ip)}$5002'
@@ -113,7 +113,7 @@ class NodeClient:
             # estabelecer uma rota desde o servidor ate ao nodo
             best = self.db.receiveFrom
             print(f"O melhor vizinho e {best}")
-            self.send_request_to_stream(best)
+            self.send_request_to_stream(best, port)
 
     def waitToStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
