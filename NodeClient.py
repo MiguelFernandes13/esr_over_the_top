@@ -33,29 +33,26 @@ class NodeClient:
             print("Connection Error to ", add[0], ":", add[1])
 
     def recalculate_roots(self):
-        try:
-            self.recalculate_roots_lock.acquire()
-            print("Recalculating roots")
-            oldBest = self.db.receiveFrom
-            best = self.db.bestNeighbor()
-            print(f"Old best: {oldBest} New best: {best} streaming: {self.db.streaming}")
-            self.db.updateReceiveFrom(best)
-            if best != oldBest and self.db.streaming:
-                print("Changing stream")
-                self.db.updateWaitBool(True)
-                self.db.waitIp = best
-                self.send_request_to_stream(best)
-                self.db.waitStream.acquire()
-                try:
-                    print("Waiting for stream")
-                    while self.db.waitBool:
-                        self.db.waitStream.wait()
-                    print("Stream received")
-                    self.send_stop_stream(oldBest)
-                finally:
-                    self.db.waitStream.release()
-        finally:
-            self.recalculate_roots_lock.release()
+        print("Recalculating roots")
+        oldBest = self.db.receiveFrom
+        best = self.db.bestNeighbor()
+        print(f"Old best: {oldBest} New best: {best} streaming: {self.db.streaming}")
+        self.db.updateReceiveFrom(best)
+        if best != oldBest and self.db.streaming:
+            print("Changing stream")
+            self.db.updateWaitBool(True)
+            self.db.waitIp = best
+            self.send_request_to_stream(best)
+            self.db.waitStream.acquire()
+            try:
+                print("Waiting for stream")
+                while self.db.waitBool:
+                    self.db.waitStream.wait()
+                print("Stream received")
+                self.send_stop_stream(oldBest)
+            finally:
+                self.db.waitStream.release()
+
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg, _ = client.recvfrom(1024)
