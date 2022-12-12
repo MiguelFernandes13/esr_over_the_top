@@ -158,14 +158,14 @@ class NodeClient:
         s.sendto(message, address)
         s.close()
 
-    def resend_stream(self, interface: str, db: NodeDataBase):
+    def resend_stream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         print("Wait for stream in ", interface)
         s.bind((interface, 5002))
         try:
             while True:
                 message, add = s.recvfrom(20480)
-                db.streaming = True
+                self.db.streaming = True
                 #print(f"Received stream from {add} and waitIp is {self.db.waitIp}")
                 if self.db.waitBool and add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
