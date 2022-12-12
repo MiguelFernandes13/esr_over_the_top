@@ -91,12 +91,13 @@ class NodeClient:
                              args=(client, add, interface)).start()
 
     def send_request_to_stream(self, ip: str):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip, 5001))
-        message = f'{self.db.getIpToInterface(ip)}$5002'
-        print("SEND REQUEST TO STREAM: ", message)
-        s.sendall(message.encode('utf-8'))
-        s.close()
+        if (ip,5002) not in self.db.getSentTo():
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((ip, 5001))
+            message = f'{self.db.getIpToInterface(ip)}$5002'
+            print("SEND REQUEST TO STREAM: ", message)
+            s.sendall(message.encode('utf-8'))
+            s.close()
 
     def start_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
