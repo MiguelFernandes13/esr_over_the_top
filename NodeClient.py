@@ -35,6 +35,7 @@ class NodeClient:
         print("Recalculating roots")
         oldBest = self.db.receiveFrom
         best = self.db.bestNeighbor()
+        print(f"Old best: {oldBest} New best: {best} streaming: {self.db.streaming}")
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             print("Changing stream")
