@@ -113,6 +113,9 @@ class NodeClient:
             best = self.db.receiveFrom
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best)
+            p = multiprocessing.Process(target=self.resend_stream,args=(self.db.getIpToInterface(best), ))
+            p.start()
+            self.db.processReceive = p
             self.db.streaming = True
 
     def waitToStream(self, interface: str):
