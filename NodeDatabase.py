@@ -16,7 +16,6 @@ class NodeDataBase:
     receiveFrom: str
     oldBest: tuple  # (ip, serverAddress, time, jumps)
     lock: threading.Lock
-    processReceive: multiprocessing.Process
     waitStreamCondition: threading.Condition
     waitIp : str
     waitBool : bool
@@ -34,7 +33,6 @@ class NodeDataBase:
         self.receiveFrom = ""
         self.oldBest = ("", "", 0, 0)
         self.lock = threading.Lock()
-        self.processReceive = None
         self.waitStream = threading.Condition()
         self.waitIp = ""
         self.waitBool = False

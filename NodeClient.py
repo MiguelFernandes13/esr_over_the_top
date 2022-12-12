@@ -1,7 +1,6 @@
 import socket
 import sys
 import threading
-import multiprocessing
 import time
 from tkinter import *
 import ast
@@ -39,24 +38,20 @@ class NodeClient:
         self.db.updateReceiveFrom(best)
         if best != oldBest and self.db.streaming:
             print("Changing stream")
+            self.db.waitBool = True
             self.send_request_to_stream(best)
-            p = multiprocessing.Process(
-                target=self.resend_stream, args=(self.db.getIpToInterface(best), self.db))
-            p.start()
-            if self.db.processReceive is not None:
-                self.db.waitIp = best
-                self.db.waitStream.acquire()
-                try:
-                    print("Waiting for stream")
-                    while not self.db.waitBool:
-                        self.db.waitStream.wait()
-                    print("Stream received")
-                    self.db.waitBool = False
-                    self.db.processReceive.terminate()
-                    self.send_stop_stream(oldBest)
-                finally:
-                    self.db.waitStream.release()
-            self.db.processReceive = p
+            self.db.waitIp = best
+            self.db.waitStream.acquire()
+            try:
+                print("Waiting for stream")
+                while not self.db.waitBool:
+                    self.db.waitStream.wait()
+                print("Stream received")
+                self.db.waitBool = False
+                self.db.processReceive.terminate()
+                self.send_stop_stream(oldBest)
+            finally:
+                self.db.waitStream.release()
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg, _ = client.recvfrom(1024)
@@ -117,10 +112,6 @@ class NodeClient:
             best = self.db.receiveFrom
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best)
-            p = multiprocessing.Process(
-                target=self.resend_stream, args=(self.db.getIpToInterface(best), self.db))
-            p.start()
-            self.db.processReceive = p
 
     def waitToStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -176,10 +167,10 @@ class NodeClient:
                 message, add = s.recvfrom(20480)
                 db.streaming = True
                 #print(f"Received stream from {add} and waitIp is {self.db.waitIp}")
-                if add[0] == self.db.waitIp:
+                if self.db.waitBool and add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
                     try:
-                        self.db.waitStream.notify_all()
+                        self.db.waitStream.notify()
                     finally:
                         self.db.waitStream.release()
                 for i in self.db.getSendTo():
@@ -213,6 +204,6 @@ class NodeClient:
             threading.Thread(target=self.keepAlive, args=(i, )).start()
             threading.Thread(target=self.waitToStream, args=(i, )).start()
             threading.Thread(target=self.waitToStopStream, args=(i, )).start()
-            #threading.Thread(target=self.resend_stream, args=(i, )).start()
+            threading.Thread(target=self.resend_stream, args=(i, )).start()
 
         # self.watchStream()
