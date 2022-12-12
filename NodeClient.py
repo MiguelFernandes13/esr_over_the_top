@@ -45,7 +45,7 @@ class NodeClient:
                 self.db.waitStream.acquire()
                 try:
                     print("Waiting for stream")
-                    self.db.waitStream.notify()
+                    self.db.waitStream.wait()
                 finally:
                     self.db.waitStream.release()
             if self.db.processReceive is not None:
