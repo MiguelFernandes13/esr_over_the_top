@@ -163,6 +163,7 @@ class NodeClient:
 
     def resend_stream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        print("Wait for stream in ", interface)
         s.bind((interface, 5002))
         try:
             while True:
