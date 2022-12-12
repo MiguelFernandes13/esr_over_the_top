@@ -136,8 +136,8 @@ class NodeClient:
         message = message.split('$')
         ip = message[0]
         port = int(message[1])
+        print("Remove stream to: ", ip, ":", port, "")
         self.db.removeSendTo(ip, port)
-        print("Remove:", message)
         if len(self.db.getSendTo()) == 0:
             self.db.streaming = False
             self.send_stop_stream(self.db.receiveFrom)

@@ -107,6 +107,7 @@ class NodeDataBase:
         try:
             self.lock.acquire()
             if (ip, port) in self.sendTo:
+                print("removing", ip, port)
                 self.sendTo.remove((ip, port))
         finally:
             self.lock.release()
