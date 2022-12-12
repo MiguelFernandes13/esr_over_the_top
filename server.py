@@ -4,7 +4,7 @@ import threading
 import time
 from RtpPacket import RtpPacket
 from VideoStream import VideoStream
-from Database import Database, Node
+from Database import Database, Node, HelperServer
 import json
 
 
@@ -24,6 +24,9 @@ class Server:
         video = VideoStream("movie.Mjpeg")
         self.serverAddr = data['Server']['Ip']
         self.database = Database(self.serverAddr)
+
+        for helper in data['HelpersServers']:
+            self.database.addHelperServer(helper['Ip'], helper['Neighbors'])
 
         for i in data['Nodes']:
             self.database.addNode(i['InternalInterfaces'], i['Clients'],
@@ -127,14 +130,14 @@ class Server:
 
             data = video.next_frame()
             if data:
-                frameNumber = video.frameNbr()
+                self.database.frameNumber = video.frameNbr()
                 try:
                     for node in self.database.getStreamToList():
                         address = node.ip_to_server
                         port = 5002
                         print(
-                            f"Sending frame {frameNumber} to {address}:{port}")
-                        node.rtpSocket.sendto(self.makeRtp(data, frameNumber),
+                            f"Sending frame {self.database.frameNumber} to {address}:{port}")
+                        node.rtpSocket.sendto(self.makeRtp(data, self.database.frameNumber),
                                            (address, port))
                 except:
                     print("Connection Error")
@@ -197,3 +200,25 @@ class Server:
                     except:
                         print("Connection Error no keepalive")
                         self.database.disconnectNode(node.ip_to_server)
+
+    def waitForAlternativeServer(self):
+        s: socket.socket
+        porta: int
+        helper: HelperServer
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        porta = 7000
+
+        s.bind((self.serverAddr, porta))
+        s.listen(5)
+
+        while True:
+            client, _ = s.accept()
+            _, add = client.recv(1024).decode('utf-8')
+
+            if helper := self.database.getHelper():
+                server_info = f"{helper.getIp()}${helper.getNeighbors()}${self.database.frameNumber}".encode('utf-8')
+                client.send(server_info)
+            client.close()
+            
+            

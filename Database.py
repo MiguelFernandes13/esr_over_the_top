@@ -2,6 +2,19 @@ import threading
 import time
 import socket
 
+class HelperServer:
+    ip: str
+    neighbors: list
+
+    def __init__(self, ip, neighbors):
+        self.ip = ip
+        self.neighbors = neighbors
+
+    def getIp(self):
+        return self.ip
+
+    def getNeighbors(self):
+        return self.neighbors
 
 class Node:
     ip_to_server: str
@@ -49,6 +62,8 @@ class Database:
     all_nodes: list
     neighbors: dict  # [ips]
     streamTo: list  # [Node]
+    helperServers: list  # [HelperServer]
+    frameNumber: int
 
     def __init__(self, Ip):
         self.ip = Ip
@@ -58,7 +73,21 @@ class Database:
         self.neighbors = {}
         self.streamTo = []
         self.mask = 24
-        self.masBin = bin(self.mask)
+        self.helperServers = []
+        self.frameNumber = 0
+
+    def addHelperServer(self, ip, neighbors):
+        try:
+            self.lock.acquire()
+            self.helperServers.append(HelperServer(ip, neighbors))
+        finally:
+            self.lock.release()
+
+    def getHelperServer(self, ip):
+        for helper in self.helperServers:
+            if helper.getIp() == ip:
+                return helper
+        return None
 
     def addNeighbors(self, neighbors: list):
         try:
