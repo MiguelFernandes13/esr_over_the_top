@@ -115,6 +115,13 @@ class NodeDataBase:
     def getSendTo(self) -> list:
         return self.sendTo
 
+    def updateWaitBool(self, bool):
+        try:
+            self.lock.acquire()
+            self.waitBool = bool
+        finally:
+            self.lock.release()
+
     def bestNeighbor(self) -> str:
         bestNeighborStreaming: tuple
         jumpThreshold = 0.95

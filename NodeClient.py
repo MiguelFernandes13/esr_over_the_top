@@ -42,16 +42,16 @@ class NodeClient:
             self.db.updateReceiveFrom(best)
             if best != oldBest and self.db.streaming:
                 print("Changing stream")
-                self.db.waitBool = True
-                self.send_request_to_stream(best)
+                self.db.updateWaitBool(True)
                 self.db.waitIp = best
+                self.send_request_to_stream(best)
                 self.db.waitStream.acquire()
                 try:
                     print("Waiting for stream")
                     while not self.db.waitBool:
                         self.db.waitStream.wait()
                     print("Stream received")
-                    self.db.waitBool = False
+                    self.db.updateWaitBool(False)
                     self.send_stop_stream(oldBest)
                 finally:
                     self.db.waitStream.release()
@@ -175,8 +175,8 @@ class NodeClient:
                 if self.db.waitBool and add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
                     try:
-                        self.db.waitBool = False
-                        self.db.waitStream.notify()
+                        self.db.updateWaitBool(False)
+                        self.db.waitStream.notify_all()
                     finally:
                         self.db.waitStream.release()
                 for i in self.db.getSendTo():
