@@ -64,13 +64,16 @@ class NodeClient:
         time_ = time.time() - float(time_receveid)
         jump = int(msg_decode[4])
         stream = bool(msg_decode[5])
-        # atualizar o tempo de vida do cliente
-        # atualizar o numero de saltos do cliente
         self.db.update(server_address, add[0], time_, jump, stream, interface)
-        threading.Thread(target=self.recalculate_roots).start()
+        self.db.addSent(server_address, add[0], seq)
+        if self.db.alreadySent[server_address].get(seq - 1):
+            if len(self.db.alreadySent[server_address][seq -1]) == len(self.db.alreadySent[server_address][seq]):
+                threading.Thread(target=self.recalculate_roots).start()
+        else:
+            threading.Thread(target=self.recalculate_roots).start()
+        
         print("Tempos de vida ", self.db.times)
         print("Saltos ", self.db.jumps)
-        self.db.addSent(server_address, add[0], seq)
         # enviar para os vizinhos um keepalive com o tempo atual e o numero de saltos atualizado
         # enviar tambem se o nodo esta a fazer streaming
         for i in self.db.getNeighbors():
