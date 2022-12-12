@@ -116,9 +116,6 @@ class NodeDataBase:
     def getSendTo(self) -> list:
         return self.sendTo
 
-    def getSendToBySeq(self, serverAdd, seq) -> list:
-        return self.alreadySent[serverAdd][seq]
-
     def bestNeighbor(self) -> str:
         bestNeighborStreaming: tuple
         jumpThreshold = 0.95
