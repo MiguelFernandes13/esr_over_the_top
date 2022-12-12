@@ -91,7 +91,7 @@ class NodeClient:
                              args=(client, add, interface)).start()
 
     def send_request_to_stream(self, ip: str, port : int):
-        if (ip,port) not in self.db.getSentTo():
+        if (ip,port) not in self.db.getSendTo():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, 5001))
             message = f'{self.db.getIpToInterface(ip)}$5002'
