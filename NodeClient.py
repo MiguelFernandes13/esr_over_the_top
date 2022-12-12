@@ -13,10 +13,12 @@ from RtpPacket import RtpPacket
 class NodeClient:
     serverAddr: str
     db: NodeDataBase
+    recalculate_roots_lock : threading.Lock
 
     def __init__(self, serveraddr):
         self.serverAddr = serveraddr
         self.db = NodeDataBase()
+        self.recalculate_roots_lock = threading.Lock()
 
     def send_keepAlive(self, server_address: str, add: tuple, seq: int,
                        time: float, jump: int):
@@ -31,26 +33,30 @@ class NodeClient:
             print("Connection Error to ", add[0], ":", add[1])
 
     def recalculate_roots(self):
-        print("Recalculating roots")
-        oldBest = self.db.receiveFrom
-        best = self.db.bestNeighbor()
-        print(f"Old best: {oldBest} New best: {best} streaming: {self.db.streaming}")
-        self.db.updateReceiveFrom(best)
-        if best != oldBest and self.db.streaming:
-            print("Changing stream")
-            self.db.waitBool = True
-            self.send_request_to_stream(best)
-            self.db.waitIp = best
-            self.db.waitStream.acquire()
-            try:
-                print("Waiting for stream")
-                while not self.db.waitBool:
-                    self.db.waitStream.wait()
-                print("Stream received")
-                self.db.waitBool = False
-                self.send_stop_stream(oldBest)
-            finally:
-                self.db.waitStream.release()
+        try:
+            self.recalculate_roots_lock.acquire()
+            print("Recalculating roots")
+            oldBest = self.db.receiveFrom
+            best = self.db.bestNeighbor()
+            print(f"Old best: {oldBest} New best: {best} streaming: {self.db.streaming}")
+            self.db.updateReceiveFrom(best)
+            if best != oldBest and self.db.streaming:
+                print("Changing stream")
+                self.db.waitBool = True
+                self.send_request_to_stream(best)
+                self.db.waitIp = best
+                self.db.waitStream.acquire()
+                try:
+                    print("Waiting for stream")
+                    while not self.db.waitBool:
+                        self.db.waitStream.wait()
+                    print("Stream received")
+                    self.db.waitBool = False
+                    self.send_stop_stream(oldBest)
+                finally:
+                    self.db.waitStream.release()
+        finally:
+            self.recalculate_roots_lock.release()
 
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
         msg, _ = client.recvfrom(1024)
