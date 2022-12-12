@@ -170,6 +170,7 @@ class NodeClient:
                 if self.db.waitBool and add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
                     try:
+                        self.db.waitBool = False
                         self.db.waitStream.notify()
                     finally:
                         self.db.waitStream.release()
