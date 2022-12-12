@@ -42,12 +42,12 @@ class NodeClient:
             p.start()
             if oldBest != "":
                 self.db.waitIp = best
-                self.db.waitStream.acquire()
-                try:
-                    print("Waiting for stream")
-                    self.db.waitStream.wait()
-                finally:
-                    self.db.waitStream.release()
+                #self.db.waitStream.acquire()
+                #try:
+                print("Waiting for stream")
+                self.db.waitStream.wait()
+                #finally:
+                    #self.db.waitStream.release()
             if self.db.processReceive is not None:
                 self.db.processReceive.terminate()
             self.db.processReceive = p
@@ -166,11 +166,11 @@ class NodeClient:
             while True:
                 message, add = s.recvfrom(20480)
                 if add[0] == self.db.waitIp:
-                    self.db.waitStream.acquire()
-                    try:
-                        self.db.waitStream.notify()
-                    finally:
-                        self.db.waitStream.release()
+                    #self.db.waitStream.acquire()
+                    #try:
+                    self.db.waitStream.notify()
+                    #finally:
+                    #    self.db.waitStream.release()
                 for i in self.db.getSendTo():
                     threading.Thread(target=self.send_stream,
                                      args=(i, message)).start()
