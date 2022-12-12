@@ -8,7 +8,7 @@ class NodeDataBase:
     streaming: bool
     neighbors: list
     iPToInterface: dict  # { 'ip' : interfaces }
-    times: dict  # { 'ip', : { serverAddress : time }  }
+    times: dict  # { 'ip', : { (serverAddress, seq) :  time }  }
     jumps: dict  # { 'ip' : { serverAddress : jumps }
     streams: dict  # { 'ip' : stream(on/off) }
     alreadySent: dict  # {serverAddress : {seq : [lista visitados] }
@@ -90,6 +90,8 @@ class NodeDataBase:
                 self.alreadyReceived[serverAdd] = {}
             if seq not in self.alreadyReceived[serverAdd].keys():
                 self.alreadyReceived[serverAdd][seq] = []
+                self.times = {}
+                self.jumps = {}
             self.alreadyReceived[serverAdd][seq].append(ip)
         finally:
             self.lock.release()
