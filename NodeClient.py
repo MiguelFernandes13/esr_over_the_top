@@ -41,7 +41,7 @@ class NodeClient:
             print("Changing stream")
             self.send_request_to_stream(best)
             p = multiprocessing.Process(
-                target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
+                target=self.resend_stream, args=(self.db.getIpToInterface(best), self.db))
             p.start()
             if self.db.processReceive is not None:
                 self.db.waitIp = best
@@ -118,7 +118,7 @@ class NodeClient:
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best)
             p = multiprocessing.Process(
-                target=self.resend_stream, args=(self.db.getIpToInterface(best), ))
+                target=self.resend_stream, args=(self.db.getIpToInterface(best), self.db))
             p.start()
             self.db.processReceive = p
 
@@ -167,15 +167,14 @@ class NodeClient:
         s.sendto(message, address)
         s.close()
 
-    def resend_stream(self, interface: str):
+    def resend_stream(self, interface: str, db: NodeDataBase):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         print("Wait for stream in ", interface)
         s.bind((interface, 5002))
         try:
             while True:
                 message, add = s.recvfrom(20480)
-                self.db.streaming = True
-                print(f"streaming {self.db.streaming}")
+                db.streaming = True
                 #print(f"Received stream from {add} and waitIp is {self.db.waitIp}")
                 if add[0] == self.db.waitIp:
                     self.db.waitStream.acquire()
