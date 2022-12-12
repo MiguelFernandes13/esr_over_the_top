@@ -12,6 +12,7 @@ class NodeDataBase:
     jumps: dict  # { 'ip' : { serverAddress : jumps }
     streams: dict  # { 'ip' : stream(on/off) }
     alreadySent: dict  # {serverAddress : {seq : [lista visitados] }
+    alreadyReceived: dict  # {serverAddress : {seq : [lista recebidos] }
     sendTo: list  # [(ip, port)]
     receiveFrom: str
     oldBest: tuple  # (ip, serverAddress, time, jumps)
@@ -90,9 +91,9 @@ class NodeDataBase:
             if seq not in self.alreadyReceived[serverAdd].keys():
                 self.alreadyReceived[serverAdd][seq] = []
             self.alreadyReceived[serverAdd][seq].append(ip)
-            self.addSent(serverAdd, ip, seq)
         finally:
             self.lock.release()
+        self.addSent(serverAdd, ip, seq)
 
     def addSent(self, serverAdd, ip, seq):
         try:
