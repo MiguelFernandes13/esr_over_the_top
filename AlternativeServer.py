@@ -1,3 +1,4 @@
+import ast
 import socket
 import threading
 import time
@@ -32,8 +33,8 @@ class AlternativeServer:
         message = message.decode('utf-8').split('$')
         print("Message: ", message)
         self.db.addIp(message[0])
-        self.db.addNeighbour(message[1])
-        self.db.addFrameNbr(message[2])
+        self.db.addNeighbour(self.stringToList(message[1])[0])
+        self.db.addFrameNbr(int(message[2]))
         s.close()
         
 
@@ -45,7 +46,7 @@ class AlternativeServer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         porta = 5001
 
-        s.bind((self.serverAddr, porta))
+        s.bind((self.db.ip, porta))
         s.listen(5)
 
         while True:
@@ -69,7 +70,7 @@ class AlternativeServer:
                 #enviar para cada vizinho um keepalive com tempo atual e numero de saltos
                 t = time.time()
                 jumps = 1
-                message = f'KEEPALIVE {self.serverAddr} {seq} {t} {jumps} {True}'
+                message = f'KEEPALIVE {self.db.ip} {seq} {t} {jumps} {True}'
                 seq += 1
                 print("Sending: ", message)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,7 +89,7 @@ class AlternativeServer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         porta = 5003
 
-        s.bind((self.serverAddr, porta))
+        s.bind((self.db.ip, porta))
         s.listen(5)
 
         while True:
@@ -136,5 +137,10 @@ class AlternativeServer:
                          ssrc, payload)
 
         return rtpPacket.getPacket()
+
+    def stringToList(self, string) -> list:
+        list = ast.literal_eval(string)
+        list = [n.strip() for n in list]
+        return list
 
         
