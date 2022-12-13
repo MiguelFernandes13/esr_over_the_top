@@ -215,9 +215,9 @@ class Server:
 
         while True:
             client, _ = s.accept()
-            _, add = client.recv(1024).decode('utf-8')
+            _, add = client.recv(1024)
 
-            if helper := self.database.getHelper():
+            if helper := self.database.getHelperServer(add[0]):
                 server_info = f"{helper.getIp()}${helper.getNeighbors()}${self.database.frameNumber}".encode('utf-8')
                 client.send(server_info)
             client.close()
