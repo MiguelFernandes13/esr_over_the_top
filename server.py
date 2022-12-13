@@ -25,7 +25,7 @@ class Server:
         self.serverAddr = data['Server']['Ip']
         self.database = Database(self.serverAddr)
 
-        for helper in data['HelpersServers']:
+        for helper in data['HelperServers']:
             self.database.addHelperServer(helper['Ip'], helper['Neighbors'])
 
         for i in data['Nodes']:
