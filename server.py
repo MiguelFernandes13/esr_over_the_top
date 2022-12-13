@@ -41,6 +41,7 @@ class Server:
         threading.Thread(target=self.sendRtp, args=(video, )).start()
         threading.Thread(target=self.keepAlive).start()
         threading.Thread(target=self.stopStream).start()
+        threading.Thread(target=self.waitForAlternativeServer).start()
 
     def join_network(self):
         s: socket.socket
