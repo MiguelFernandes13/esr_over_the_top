@@ -64,13 +64,6 @@ class NodeClient:
         time_ = time.time() - float(time_receveid)
         jump = int(msg_decode[4])
         stream = bool(msg_decode[5])
-        for i in self.db.getNeighbors():
-            if i not in self.db.getSent(server_address, seq):
-                print(f"Enviando para {i}")
-                threading.Thread(target=self.send_keepAlive,
-                                 args=(server_address, (i, 5000), seq,
-                                       time_receveid, jump)).start()
-        client.close()
 
 
         self.db.addReceived(server_address, add[0], seq)
@@ -83,6 +76,13 @@ class NodeClient:
         
         print("Tempos de vida ", self.db.times)
         #print("Saltos ", self.db.jumps)
+        for i in self.db.getNeighbors():
+            if i not in self.db.getSent(server_address, seq):
+                print(f"Enviando para {i}")
+                threading.Thread(target=self.send_keepAlive,
+                                 args=(server_address, (i, 5000), seq,
+                                       time_receveid, jump)).start()
+        client.close()
 
     def keepAlive(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
