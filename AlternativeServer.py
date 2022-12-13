@@ -3,6 +3,7 @@ import threading
 import time
 from AlternativeServerDB import AlternativeServerDB
 from VideoStream import VideoStream
+from RtpPacket import RtpPacket
 
 
 class AlternativeServer:
@@ -28,6 +29,7 @@ class AlternativeServer:
         s.connect((self.serverAddr, 7000))
         s.sendall(b"I am alive")
         message, _ = s.recvfrom(1024).decode('utf-8').split('$')
+        print("Message: ", message)
         self.db.addIp(message[0])
         self.db.addNeighbour(message[1])
         self.db.addFrameNbr(message[2])
