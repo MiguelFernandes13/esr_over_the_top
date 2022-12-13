@@ -52,9 +52,9 @@ class AlternativeServer:
         while True:
             client, add = s.accept()
             print(f"Conectado a {add[0]}:{add[1]}")
-            message = s.recv(1024).decode('utf-8')
+            message = s.recv(1024)
             print("Message: ", message)
-            ip = message.split('$')[0]
+            ip = message.decode('utf-8').split('$')[0]
             rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             if ip == self.db.neighbour:
                 self.db.addRtpSocket(rtpSocket)
