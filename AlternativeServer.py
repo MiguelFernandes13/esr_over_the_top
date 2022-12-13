@@ -56,7 +56,9 @@ class AlternativeServer:
             print("Message: ", message)
             ip = message.split('$')[0]
             rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.db.addRtpSocket(ip, rtpSocket)
+            if ip == self.db.neighbour:
+                self.db.addRtpSocket(rtpSocket)
+                self.db.startStream()
             client.close()
             
 
@@ -97,7 +99,7 @@ class AlternativeServer:
             message = client.recv(1024).decode('utf-8')
             ip = message.split('$')[0]
             if ip == self.db.neighbour:
-                self.db.stream = False
+                self.db.stopStream()
             client.close()
 
     def sendRtp(self, video: VideoStream):
@@ -109,16 +111,16 @@ class AlternativeServer:
             data = video.next_frame()
             if data:
                 self.db.frameNbr = video.frameNbr()
-                try:
-                    if self.db.stream:
-                        address = self.db.neighbour
-                        port = 5002
-                        print(
-                            f"Sending frame {self.db.frameNbr} to {address}:{port}")
-                        self.db.rtpSocket.sendto(self.makeRtp(data, self.db.frameNbr),
-                                           (address, port))
-                except:
-                    print("Connection Error")
+                if self.db.stream:
+                    try:
+                            address = self.db.neighbour
+                            port = 5002
+                            print(
+                                f"Sending frame {self.db.frameNbr} to {address}:{port}")
+                            self.db.rtpSocket.sendto(self.makeRtp(data, self.db.frameNbr),
+                                               (address, port))
+                    except:
+                        print("Connection Error")
 
     def makeRtp(self, payload, frameNbr):
         """RTP-packetize the video data."""

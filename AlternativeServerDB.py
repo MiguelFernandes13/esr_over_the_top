@@ -12,6 +12,7 @@ class AlternativeServerDB:
         self.neighbour = ""
         self.ip = ""
         self.frameNbr = 0
+        self.stream = False
 
 
     def addIp(self, ip):
@@ -25,3 +26,9 @@ class AlternativeServerDB:
 
     def addRtpSocket(self, rtpSocket):
         self.rtpSocket = rtpSocket
+
+    def startStream(self):
+        self.stream = True
+
+    def stopStream(self):
+        self.stream = False
