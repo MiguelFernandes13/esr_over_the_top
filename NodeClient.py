@@ -13,12 +13,10 @@ from RtpPacket import RtpPacket
 class NodeClient:
     serverAddr: str
     db: NodeDataBase
-    recalculate_roots_lock : threading.Lock
 
     def __init__(self, serveraddr):
         self.serverAddr = serveraddr
         self.db = NodeDataBase()
-        self.recalculate_roots_lock = threading.Lock()
 
     def send_keepAlive(self, server_address: str, add: tuple, seq: int,
                        time: float, jump: int):
