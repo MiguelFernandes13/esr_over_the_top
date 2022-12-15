@@ -42,6 +42,7 @@ class Server:
         threading.Thread(target=self.keepAlive).start()
         threading.Thread(target=self.stopStream).start()
         threading.Thread(target=self.waitForAlternativeServer).start()
+        threading.Thread(target=self.waitToStopStreamClient).start()
 
     def join_network(self):
         s: socket.socket
@@ -115,6 +116,7 @@ class Server:
         client.send(str(sessionId).encode('utf-8'))
         client.close()
         port = int(message)
+        self.database.addClientPort(add[0], port)
         nodeIp = self.database.getStreamTo(add[0])
         print("Node to stream: ", nodeIp)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -220,6 +222,31 @@ class Server:
             if helper := self.database.getHelperServer(add[0]):
                 server_info = f"{helper.getIp()}${helper.getNeighbors()}${self.database.frameNumber}".encode('utf-8')
                 client.send(server_info)
+            client.close()
+
+    def stopStreamClient(self, add : tuple):
+        nodeIp = self.database.getStreamTo(add[0])
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((nodeIp, 5003))
+        port = self.database.getClientPort(add[0])
+        message = f"{add[0]}${port}".encode('utf-8')
+        s.send(message)
+        s.close()
+
+
+    def waitToStopStreamClient(self):
+        s: socket.socket
+        porta: int
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        porta = 5004
+
+        s.bind((self.serverAddr, porta))
+        s.listen(5)
+
+        while True:
+            client, add = s.accept()
+            threading.Thread(target=self.stopStreamClient, args=(add, )).start()
             client.close()
             
             

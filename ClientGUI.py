@@ -69,7 +69,14 @@ class ClientGUI:
         self.master.destroy()  # Close the gui window
         os.remove(CACHE_FILE_NAME + str(self.sessionId) +
                   CACHE_FILE_EXT)  # Delete the cache image from video
+        self.stopStream()
         self.rtpSocket.close()
+
+    def stopStream(self):
+        """Stop button handler."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.serverAddr, 5004))
+        s.close()
 
     def playMovie(self):
         """Play button handler."""

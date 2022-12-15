@@ -64,6 +64,7 @@ class Database:
     streamTo: list  # [Node]
     helperServers: list  # [HelperServer]
     frameNumber: int
+    clientPort : dict # {ip : port}
 
     def __init__(self, Ip):
         self.ip = Ip
@@ -75,6 +76,17 @@ class Database:
         self.mask = 24
         self.helperServers = []
         self.frameNumber = 0
+        self.clientPort = {}
+
+    def getClientPort(self, ip):
+        return self.clientPort[ip]
+
+    def addClientPort(self, ip, port):
+        try:
+            self.lock.acquire()
+            self.clientPort[ip] = port
+        finally:
+            self.lock.release()
 
     def addHelperServer(self, ip, neighbors):
         try:
