@@ -18,6 +18,9 @@ class NodeClient:
         self.serverAddr = serveraddr
         self.db = NodeDataBase()
 
+    '''
+    Método que envia um keep alive para um vizinho
+    '''
     def send_keepAlive(self, server_address: str, add: tuple, seq: int,
                        time: float, jump: int):
         try:
@@ -30,6 +33,11 @@ class NodeClient:
         except:
             print("Connection Error to ", add[0], ":", add[1])
 
+    '''
+    Calcula o melhor vizinho, caso este seja diferente do anterior,
+    envia um pedido de stream para o novo melhor vizinho e 
+    para o antigo melhor vizinho envia um pedido de parar stream
+    '''
     def recalculate_roots(self):
         print("Recalculating roots")
         oldBest = self.db.receiveFrom
@@ -44,7 +52,7 @@ class NodeClient:
                 self.db.waitStream.acquire()
                 try:
                     print("Waiting for stream")
-                    while self.db.waitBool:
+                    while self.db.waitBool: # Espera que a stream do nodo 'waitIp' seja recebida
                         self.db.waitStream.wait()
                     print("Stream received")
                     self.send_stop_stream(oldBest)
@@ -52,7 +60,11 @@ class NodeClient:
                     self.db.waitStream.release()
 
 
+    '''
+    Método responsável por fazer a inudação dos keep alives pelos vizinhos
+    '''
     def fload_keepAlive(self, client: socket, add: tuple, interface: str):
+        #Recebe o keep alive e descodifica a mensagem
         msg, _ = client.recvfrom(1024)
         msg_decode = msg.decode('utf-8').split(' ')
         print(f"Mensagem recebida {msg_decode} de {add[0]}:{add[1]}")
@@ -63,9 +75,10 @@ class NodeClient:
         jump = int(msg_decode[4])
         stream = bool(msg_decode[5])
 
-
+        #Adiona o nó à lista de recebidos atualiza as métricas
         self.db.addReceived(server_address, add[0], seq)
         self.db.update(server_address, add[0], time_, jump, stream, interface)
+        #Apenas recalcula as rotas quando é a primeira vez ou quando recebe todos os keep alives
         if self.db.alreadyReceived[server_address].get(seq - 1):
             if len(self.db.alreadyReceived[server_address][seq -1]) == len(self.db.alreadyReceived[server_address][seq]):
                 threading.Thread(target=self.recalculate_roots).start()
@@ -82,6 +95,9 @@ class NodeClient:
                                        time_receveid, jump)).start()
         client.close()
 
+    '''
+    Serviço que fica à escuta de keep alives
+    '''
     def keepAlive(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((interface, 5000))
@@ -91,6 +107,9 @@ class NodeClient:
             threading.Thread(target=self.fload_keepAlive,
                              args=(client, add, interface)).start()
 
+    '''
+    Envia um pedido de stream para um vizinho
+    '''
     def send_request_to_stream(self, ip: str, port : int) -> bool:
         if (ip,port) not in self.db.getSendTo():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,6 +122,9 @@ class NodeClient:
         else:
             return False
 
+    '''
+    Adiciona um nodo à lista de nodos que querem ver o stream
+    '''
     def start_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
         message = message.decode(
@@ -119,6 +141,9 @@ class NodeClient:
             print(f"O melhor vizinho e {best}")
             self.send_request_to_stream(best, port)
 
+    '''
+    Serviço que fica à escuta de pedidos de stream
+    '''
     def waitToStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((interface, 5001))
@@ -128,6 +153,9 @@ class NodeClient:
             threading.Thread(target=self.start_streaming,
                              args=(client,)).start()
 
+    '''
+    Envia um pedido para parar o stream
+    '''
     def send_stop_stream(self, ip: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, 5003))
@@ -136,6 +164,9 @@ class NodeClient:
         print("SEND STOP STREAM: ", message)
         s.close()
 
+    '''
+    Remove um nodo da lista de nodos que querem ver o stream
+    '''
     def stop_streaming(self, client: socket):
         message, _ = client.recvfrom(1024)
         message = message.decode('utf-8')
@@ -149,6 +180,9 @@ class NodeClient:
             self.send_stop_stream(self.db.receiveFrom)
         client.close()
 
+    '''
+    Serviço que fica à escuta de pedidos para parar o stream
+    '''
     def waitToStopStream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((interface, 5003))
@@ -158,12 +192,18 @@ class NodeClient:
             threading.Thread(target=self.stop_streaming,
                              args=(client, )).start()
 
+    '''
+    Envia stream para o address
+    '''
     def send_stream(self, address: tuple, message: bytes):
         print(f"Enviando stream para {address}")
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.sendto(message, address)
         s.close()
 
+    '''
+    Serviço que fica à escuta de stream e envia para os nodos que querem ver o stream
+    '''
     def resend_stream(self, interface: str):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         print("Wait for stream in ", interface)
@@ -173,11 +213,11 @@ class NodeClient:
                 message, add = s.recvfrom(20480)
                 self.db.streaming = True
                 #print(f"Received stream from {add} and waitIp is {self.db.waitIp}")
-                if self.db.waitBool and add[0] == self.db.waitIp:
+                if self.db.waitBool and add[0] == self.db.waitIp: # se o nodo que enviou o stream for o que estava à espera
                     self.db.waitStream.acquire()
                     try:
-                        self.db.updateWaitBool(False)
-                        self.db.waitStream.notify_all()
+                        self.db.updateWaitBool(False) # atualiza o waitBool para false
+                        self.db.waitStream.notify() #notifica a thread que estava à espera
                     finally:
                         self.db.waitStream.release()
                 for i in self.db.getSendTo():
@@ -196,8 +236,9 @@ class NodeClient:
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        s.connect((self.serverAddr, 3000))
+        s.connect((self.serverAddr, 3000)) # conecta-se ao servidor
 
+        #Recebe o seu ip, a lista de vizinhos e a lista de interfaces
         msg, _ = s.recvfrom(1024)
         msg_decode = msg.decode('utf-8')
         print(f"Recebi {msg_decode}")
@@ -207,10 +248,9 @@ class NodeClient:
         interfaces = msg_split[1]
         self.db.addInterfaces(self.stringToList(interfaces))
 
-        for i in self.db.getInterfaces():
+        for i in self.db.getInterfaces(): # inicia os serviços em cada interface
             threading.Thread(target=self.keepAlive, args=(i, )).start()
             threading.Thread(target=self.waitToStream, args=(i, )).start()
             threading.Thread(target=self.waitToStopStream, args=(i, )).start()
             threading.Thread(target=self.resend_stream, args=(i, )).start()
 
-        # self.watchStream()
