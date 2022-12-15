@@ -17,14 +17,19 @@ class AlternativeServer:
         self.db = AlternativeServerDB()
 
     def main(self):
+        #Conecta-se ao servidor principal
         self.connectToServer()
+        #Iniciliza o video
         video = VideoStream("movie.Mjpeg")
+        #Inicia os serviços
         threading.Thread(target=self.join_stream_node).start()
         threading.Thread(target=self.sendRtp, args=(video, )).start()
         threading.Thread(target=self.keepAlive).start()
         threading.Thread(target=self.stopStream).start()
 
 
+    #Conecta-se ao servidor principal para receber os dados necessários
+    #Recebe o ip, o vizinho e o frameNbr
     def connectToServer(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.serverAddr, 7000))
@@ -37,7 +42,9 @@ class AlternativeServer:
         self.db.addFrameNbr(int(message[2]))
         s.close()
         
-
+    #Serviço que fica à escuta na porta 5001 para receber pedidos de stream
+    #Quando recebe um pedido de stream, adiciona o nó à lista de nós que querem ver o stream
+    #e cria uma socket para enviar o stream
     def join_stream_node(self):
         s: socket.socket
         porta: int
@@ -62,7 +69,7 @@ class AlternativeServer:
             client.close()
             
 
-            
+    #Serviço que fica difunde os keep alives do servidor alternativo pela rede
     def keepAlive(self):
         seq = 0
         while True:
@@ -84,6 +91,8 @@ class AlternativeServer:
                 self.database.disconnectNode(self.db.neighbour)
 
 
+    #Serviço que fica à escuta na porta 5003 para receber pedidos de parar o stream
+    #Quando recebe um pedido de parar o stream, remove o nó da lista de nós que querem ver o stream
     def stopStream(self):
         s: socket.socket
         porta: int
@@ -102,6 +111,7 @@ class AlternativeServer:
                 self.db.stopStream()
             client.close()
 
+    #Envia os pacotes RTP para o vizinho caso este queira receber a stream
     def sendRtp(self, video: VideoStream):
         """Send RTP packets over UDP."""
         video.getFrameByNumber(self.db.frameNbr - 1)
@@ -122,6 +132,8 @@ class AlternativeServer:
                     except:
                         print("Connection Error")
 
+    # Função de criação do RTP packet
+    # Com o uso da classe RtpPacket fornecida pela equipa docente
     def makeRtp(self, payload, frameNbr):
         """RTP-packetize the video data."""
         version = 2
