@@ -144,7 +144,7 @@ class NodeDataBase:
         # Iniciliazar o melhor viznho com os valores dos antigo melhor vizinho
         # Para evitar a troca de viznhos por melhorias insignificantes nas métricas
 
-        if self.oldBest[0] == "":
+        if self.oldBest[0] == "" or self.times.get(self.oldBest[1]):
             bestNeighborStreaming = ("", "", sys.float_info.max,
                                      sys.float_info.max)
         else:
